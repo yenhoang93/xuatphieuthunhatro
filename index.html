@@ -62,7 +62,7 @@
                 <!-- Tháng thanh toán -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Tháng thanh toán</label>
-                    <input type="number" id="month" min="1" max="12" oninput="calculateAll()" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
+                    <input type="number" id="" min="1" max="12" oninput="calculateAll()" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
                 </div>
 
                 <!-- Năm thanh toán -->
@@ -372,7 +372,7 @@
             saveCurrentTableData();
 
             let address = document.getElementById('address').value;
-            let month = parseInt(document.getElementById('month').value, 10) || 1;
+            let  = parseInt(document.getElementById('month').value, 10) || 1;
             let year = parseInt(document.getElementById('year').value, 10) || 2026;
             let totalElectricBill = parseFormattedNumber(document.getElementById('total-electric-bill').value);
             let trashFee = parseFormattedNumber(document.getElementById('trash-fee').value);
@@ -439,11 +439,11 @@
                 }
             }
 
-            let prevMonth = globalCalcData.month - 1;
-            let prevYear = globalCalcData.year;
-            if (prevMonth === 0) {
-                prevMonth = 12;
-                prevYear -= 1;
+            let nextMonth = globalCalcData.month + 1;
+            let nextYear = globalCalcData.year;
+            if (nextMonth === 13) {
+                nextMonth = 1;
+                nextYear -= 1;
             }
 
             listToRender.forEach(r => {
@@ -488,7 +488,7 @@
                             <!-- Tổng tiền trọ hàng tháng -->
                             <div class="ml-auto w-2/3 mt-6 space-y-2 leading-relaxed text-gray-900">
                                 <div class="flex justify-between">
-                                    <span>Trọ tháng ${globalCalcData.month}:</span>
+                                    <span>Trọ tháng ${globalCalcData.nextmonth}:</span>
                                     <span>${r.rent} k</span>
                                 </div>
                                 <div class="flex justify-between text-gray-600">
@@ -530,7 +530,7 @@
                                 </div>
                             </div>
 
-                            <div class="font-bold mb-1 underline uppercase text-blue-800">${globalCalcData.address} - Nước tháng ${prevMonth}:</div>
+                            <div class="font-bold mb-1 underline uppercase text-blue-800">${globalCalcData.address} - Nước tháng ${Month}:</div>
                             <div class="space-y-0.5 font-mono">
                                 ${globalCalcData.roomsCalc.map(rc => `
                                     <div class="flex justify-between">
@@ -570,7 +570,7 @@
                 backgroundColor: "#ffffff"
             }).then(canvas => {
                 let link = document.createElement('a');
-                link.download = `PhieuThu_${name.replace(/\s+/g, '_')}_T${globalCalcData.month - 1}.png`;
+                link.download = `PhieuThu_${name.replace(/\s+/g, '_')}_T${globalCalcData.month}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
                 showToast("Đã tải ảnh về thành công!", "success");
@@ -582,7 +582,7 @@
 
         // --- XUẤT HÀNG LOẠT TOÀN BỘ PHIẾU THU ---
         async function downloadAllImages() {
-            let prevMonth = globalCalcData.month - 1;
+            let nextMonth = globalCalcData.month - 1;
             showToast("Bắt đầu xử lý xuất ảnh hàng loạt...", "info");
             
             for (let i = 0; i < globalCalcData.roomsCalc.length; i++) {
@@ -597,7 +597,7 @@
                         backgroundColor: "#ffffff"
                     }).then(canvas => {
                         let link = document.createElement('a');
-                        link.download = `PhieuThu_${(r.name || r.id).replace(/\s+/g, '_')}_T${prevMonth}.png`;
+                        link.download = `PhieuThu_${(r.name || r.id).replace(/\s+/g, '_')}_T${Month}.png`;
                         link.href = canvas.toDataURL('image/png');
                         link.click();
                     });
