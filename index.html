@@ -93,7 +93,7 @@
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Tổng tiền điện dãy 45</label>
                         <div class="relative flex items-center">
-                            <input type="text" id="total-electric-bill-45" value="2.172" oninput="formatAndCalc(this)" class="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 text-right">
+                            <input type="text" id="total-electric-bill-45" value="0" oninput="formatAndCalc(this)" class="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 text-right">
                             <span class="absolute right-3 text-gray-400 font-bold">K</span>
                         </div>
                     </div>
@@ -129,10 +129,10 @@
                         <thead class="bg-blue-600 text-white">
                             <tr>
                                 <th class="px-3 py-3 text-left font-semibold uppercase tracking-wider w-24">Số Phòng</th>
-                                <th class="px-3 py-3 text-left font-semibold uppercase tracking-wider">Tên Người Thuê</th>
-                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-36">Tiền Phòng</th>
-                                <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">Điện Mới</th>
-                                <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">Điện Cũ</th>
+                                <th class="px-3 py-3 text-left font-semibold uppercase tracking-wider w-24">Tên Người Thuê</th>
+                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-42">Tiền Phòng</th>
+                                <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-36">Điện Mới</th>
+                                <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-36">Điện Cũ</th>
                                 <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">Nước Mới</th>
                                 <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">Nước Cũ</th>
                                 <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">Tạm Trú</th>
@@ -200,10 +200,10 @@
                         <thead class="bg-emerald-600 text-white">
                             <tr>
                                 <th class="px-3 py-3 text-left font-semibold uppercase tracking-wider w-24">Số Phòng</th>
-                                <th class="px-3 py-3 text-left font-semibold uppercase tracking-wider">Tên Người Thuê</th>
-                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-36">Tiền Phòng</th>
-                                <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">Điện Mới</th>
-                                <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">Điện Cũ</th>
+                                <th class="px-3 py-3 text-left font-semibold uppercase tracking-wider w-24">Tên Người Thuê</th>
+                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-42">Tiền Phòng</th>
+                                <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-36">Điện Mới</th>
+                                <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-36">Điện Cũ</th>
                                 <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">Nước Mới</th>
                                 <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">Nước Cũ</th>
                                 <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">Tạm Trú</th>
@@ -923,7 +923,7 @@
                 useCORS: true,
                 backgroundColor: "#ffffff"
             }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
+                const imgData = canvas.toDataURL('image/jpeg');
 
                 if (isIOS()) {
                     // Nếu là iPhone/iPad, hiển thị ảnh trong Popup để người dùng nhấn giữ lưu
@@ -934,7 +934,7 @@
                 } else {
                     // Tải xuống tự động trên PC / Android
                     let link = document.createElement('a');
-                    link.download = `PhieuThu_${name.replace(/\s+/g, '_')}_T${globalCalcData.month}.png`;
+                    link.download = `PhieuThu_${name.replace(/\s+/g, '_')}_T${globalCalcData.month}_${globalCalcData.year}.jpeg`;
                     link.href = imgData;
                     document.body.appendChild(link);
                     link.click();
