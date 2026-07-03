@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý & xuất phiếu tính tiền nhà trọ</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- html2canvas for exporting to image -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght=0,400;0,700;1,400;1,700&family=Inter:wght@300;400;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+        }
+
+        /* Định dạng phong cách viết tay/máy in đơn giản cho hóa đơn giống ảnh mẫu */
+        .receipt-font {
+            font-family: 'Courier Prime', 'Courier New', monospace;
+        }
+
+        .tab-active {
+            border-bottom-color: #059669;
+            color: #059669;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="py-6 px-4 md:px-8">
+
+    <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-10">
+        <!-- Tiêu đề chính -->
+        <h1 class="text-2xl md:text-3xl font-extrabold text-emerald-700 text-center mb-6">Quản lý & xuất phiếu tính tiền nhà trọ</h1>
+
+        <!-- Thanh điều hướng Tab -->
+        <div class="flex border-b border-gray-200 mb-6">
+            <button id="tab-input-btn" onclick="switchTab('input')" class="flex-1 py-3 text-center font-medium text-gray-500 border-b-2 border-transparent hover:text-emerald-600 transition-all tab-active">
+                1. Nhập thông số
+            </button>
+            <button id="tab-output-btn" onclick="switchTab('output')" class="flex-1 py-3 text-center font-medium text-gray-500 border-b-2 border-transparent hover:text-emerald-600 transition-all">
+                2. Xuất phiếu thu
+            </button>
+        </div>
+
+        <!-- Khung hiển thị thông báo -->
+        <div id="toast-message" class="hidden fixed top-5 right-5 z-50 p-4 rounded-xl shadow-lg border text-sm font-semibold transition-all duration-300"></div>
+
+        <!-- TAB 1: NHẬP THÔNG SỐ -->
+        <div id="tab-input" class="space-y-6">
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Địa chỉ -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Địa chỉ dãy trọ</label>
+                    <select id="address" onchange="calculateAll()" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 bg-white">
+                        <option value="Dãy 45">Dãy 45</option>
+                        <option value="Dãy 47" selected>Dãy 47</option>
+                    </select>
+                </div>
+
+                <!-- Tháng thanh toán -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Tháng thanh toán</label>
+                    <input type="number" id="month" min="1" max="12" oninput="calculateAll()" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
+                </div>
+
+                <!-- Năm thanh toán -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Năm thanh toán</label>
+                    <input type="number" id="year" value="2026" min="2000" max="2100" oninput="calculateAll()" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
+                </div>
+
+                <!-- Tổng tiền điện -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Tổng tiền điện cả dãy</label>
+                    <div class="relative flex items-center">
+                        <input type="text" id="total-electric-bill" oninput="formatAndCalc(this)" class="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 text-right">
+                        <span class="absolute right-3 text-gray-400 font-bold">K</span>
+                    </div>
+                </div>
+
+                <!-- Tiền rác -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Tiền rác cố định/phòng</label>
+                    <div class="relative flex items-center">
+                        <input type="text" id="trash-fee" value="6" oninput="formatAndCalc(this)" class="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 text-right">
+                        <span class="absolute right-3 text-gray-400 font-bold">K</span>
+                    </div>
+                </div>
+
+                <!-- Giá khối nước -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Giá khối nước</label>
+                    <div class="relative flex items-center">
+                        <input type="text" id="water-price" value="6" oninput="formatAndCalc(this)" class="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 text-right">
+                        <span class="absolute right-3 text-gray-400 font-bold">K</span>
+                    </div>
+                </div>
+
+                <!-- Giá khối điện tính toán tự động -->
+                <div class="sm:col-span-2 lg:col-span-3 bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex justify-between items-center">
+                    <span class="text-sm font-medium text-emerald-800">Giá khối điện tự động tính (Tổng tiền điện / Tổng điện tiêu thụ):</span>
+                    <span id="calculated-elec-rate" class="text-lg font-bold text-emerald-700">0.00 K</span>
+                </div>
+            </div>
+
+            <!-- Bảng nhập thông số từng phòng -->
+            <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-md">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-emerald-600 text-white">
+                        <tr>
+                            <th class="px-3 py-3 text-left font-semibold uppercase tracking-wider w-24">Số Phòng</th>
+                            <th class="px-3 py-3 text-left font-semibold uppercase tracking-wider">Tên Người Thuê</th>
+                            <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-36">Tiền Phòng</th>
+                            <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">Điện Mới (kWh)</th>
+                            <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">Điện Cũ (kWh)</th>
+                            <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">Nước Mới (m³)</th>
+                            <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">Nước Cũ (m³)</th>
+                            <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">Tạm Trú</th>
+                            <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">Khác</th>
+                            <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-16">Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="room-table-body" class="bg-white divide-y divide-gray-200">
+                        <!-- Chèn bằng JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Nút thêm hàng trọ -->
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="addNewRoom()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow transition">
+                    + Thêm phòng
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB 2: XUẤT PHIẾU THU -->
+        <div id="tab-output" class="space-y-6 hidden">
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4 no-print">
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <span class="font-semibold text-gray-700 whitespace-nowrap">Chọn phòng xuất phiếu:</span>
+                    <select id="select-room-view" onchange="renderInvoices()" class="p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 bg-white w-full sm:w-64">
+                        <option value="all">-- Xuất tất cả các phòng --</option>
+                    </select>
+                </div>
+                <div class="flex gap-2 w-full sm:w-auto justify-end">
+                    <button type="button" onclick="window.print()" class="px-5 py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-lg shadow transition">
+                        In tất cả (PDF)
+                    </button>
+                    <button type="button" onclick="downloadAllImages()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition flex items-center justify-center gap-2">
+                        Lưu hình ảnh (PNG)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Nơi render danh sách hóa đơn theo chuẩn ảnh đính kèm -->
+            <div id="invoice-render-area" class="grid grid-cols-1 md:grid-cols-2 gap-8 justify-center">
+                <!-- Hóa đơn sẽ render vào đây -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Khởi tạo danh sách phòng mặc định ban đầu
+        let rooms = [
+            { id: 'Phòng 1', name: '', rent: 0, eNew: 0, eOld: 0, wNew: 0, wOld: 0, temp: 0, other: 0 },
+            { id: 'Phòng 2', name: '', rent: 0, eNew: 0, eOld: 0, wNew: 0, wOld: 0, temp: 0, other: 0 },
+            { id: 'Phòng 3', name: '', rent: 0, eNew: 0, eOld: 0, wNew: 0, wOld: 0, temp: 0, other: 0 },
+            { id: 'Phòng 4', name: '', rent: 0, eNew: 0, eOld: 0, wNew: 0, wOld: 0, temp: 0, other: 0 },
+            { id: 'Phòng 5', name: '', rent: 0, eNew: 0, eOld: 0, wNew: 0, wOld: 0, temp: 0, other: 0 },
+        ];
+
+        // Hàm hiện Toast Thông báo
+        function showToast(text, type = 'success') {
+            const toast = document.getElementById('toast-message');
+            toast.textContent = text;
+            toast.className = `fixed top-5 right-5 z-50 p-4 rounded-xl shadow-lg border text-sm font-semibold transition-all duration-300`;
+            
+            if (type === 'success') {
+                toast.classList.add('bg-green-50', 'text-green-800', 'border-green-200');
+            } else if (type === 'error') {
+                toast.classList.add('bg-red-50', 'text-red-800', 'border-red-200');
+            } else {
+                toast.classList.add('bg-blue-50', 'text-blue-800', 'border-blue-200');
+            }
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // --- HÀM ĐỊNH DẠNG SỐ SỬ DỤNG CHẤM PHÂN CÁCH ---
+        function parseFormattedNumber(val) {
+            if (!val) return 0;
+            let clean = String(val).replace(/\./g, '').replace(/,/g, '.');
+            let num = parseFloat(clean);
+            return isNaN(num) ? 0 : num;
+        }
+
+        function formatWithDots(num) {
+            if (num === 0 || num === '0' || num === null || num === undefined) return '';
+            let valStr = String(num).replace(/\./g, '');
+            let parsed = parseInt(valStr, 10);
+            if (isNaN(parsed)) return '';
+            return parsed.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        function formatAndCalc(input) {
+            let cursorPosition = input.selectionStart;
+            let originalLength = input.value.length;
+            
+            let rawValue = input.value.replace(/\./g, '');
+            if (rawValue === '') {
+                input.value = '';
+                calculateAll();
+                return;
+            }
+            
+            let formattedValue = formatWithDots(rawValue);
+            input.value = formattedValue;
+            
+            let newLength = formattedValue.length;
+            input.setSelectionRange(cursorPosition + (newLength - originalLength), cursorPosition + (newLength - originalLength));
+            
+            calculateAll();
+        }
+
+        // --- ĐIỀU HƯỚNG TAB ---
+        function switchTab(tabId) {
+            document.getElementById('tab-input').classList.add('hidden');
+            document.getElementById('tab-output').classList.add('hidden');
+            document.getElementById('tab-input-btn').classList.remove('tab-active');
+            document.getElementById('tab-output-btn').classList.remove('tab-active');
+
+            if (tabId === 'input') {
+                document.getElementById('tab-input').classList.remove('hidden');
+                document.getElementById('tab-input-btn').classList.add('tab-active');
+            } else {
+                document.getElementById('tab-output').classList.remove('hidden');
+                document.getElementById('tab-output-btn').classList.add('tab-active');
+                renderInvoices();
+            }
+        }
+
+        // --- LƯU TRẠNG THÁI TABLE TỪ INPUT ---
+        function saveCurrentTableData() {
+            rooms.forEach((room, i) => {
+                let rId = `row-uid-${i}`;
+                let nameEl = document.getElementById(`${rId}-name`);
+                let rentEl = document.getElementById(`${rId}-rent`);
+                let eNewEl = document.getElementById(`${rId}-eNew`);
+                let eOldEl = document.getElementById(`${rId}-eOld`);
+                let wNewEl = document.getElementById(`${rId}-wNew`);
+                let wOldEl = document.getElementById(`${rId}-wOld`);
+                let tempEl = document.getElementById(`${rId}-temp`);
+                let otherEl = document.getElementById(`${rId}-other`);
+
+                if (nameEl) room.name = nameEl.value;
+                if (rentEl) room.rent = parseFormattedNumber(rentEl.value);
+                if (eNewEl) room.eNew = parseFormattedNumber(eNewEl.value);
+                if (eOldEl) room.eOld = parseFormattedNumber(eOldEl.value);
+                if (wNewEl) room.wNew = parseFormattedNumber(wNewEl.value);
+                if (wOldEl) room.wOld = parseFormattedNumber(wOldEl.value);
+                if (tempEl) room.temp = parseFormattedNumber(tempEl.value);
+                if (otherEl) room.other = parseFormattedNumber(otherEl.value);
+            });
+        }
+
+        // --- RENDER BẢNG NHẬP LIỆU (TAB 1) ---
+        function renderInputTable() {
+            let tbody = document.getElementById('room-table-body');
+            tbody.innerHTML = '';
+
+            rooms.forEach((room, i) => {
+                let rId = `row-uid-${i}`;
+                let tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="px-3 py-2 font-bold text-gray-700 border-r border-gray-200 text-center">${room.id}</td>
+                    <td class="px-3 py-2 border-r border-gray-200">
+                        <input type="text" id="${rId}-name" value="${room.name}" oninput="calculateAll()" class="w-full p-1.5 border border-gray-200 rounded">
+                    </td>
+                    <td class="px-3 py-2 border-r border-gray-200">
+                        <div class="relative flex items-center">
+                            <input type="text" id="${rId}-rent" value="${formatWithDots(room.rent)}" oninput="formatAndCalc(this)" class="w-full p-1.5 pr-6 border border-gray-200 rounded text-right">
+                            <span class="absolute right-2 text-xs font-bold text-gray-400">K</span>
+                        </div>
+                    </td>
+                    <td class="px-3 py-2 border-r border-gray-200">
+                        <input type="text" id="${rId}-eNew" value="${formatWithDots(room.eNew)}" oninput="formatAndCalc(this)" class="w-full p-1.5 border border-gray-200 rounded text-center">
+                    </td>
+                    <td class="px-3 py-2 border-r border-gray-200">
+                        <input type="text" id="${rId}-eOld" value="${formatWithDots(room.eOld)}" oninput="formatAndCalc(this)" class="w-full p-1.5 border border-gray-200 rounded text-center">
+                    </td>
+                    <td class="px-3 py-2 border-r border-gray-200">
+                        <input type="text" id="${rId}-wNew" value="${formatWithDots(room.wNew)}" oninput="formatAndCalc(this)" class="w-full p-1.5 border border-gray-200 rounded text-center">
+                    </td>
+                    <td class="px-3 py-2 border-r border-gray-200">
+                        <input type="text" id="${rId}-wOld" value="${formatWithDots(room.wOld)}" oninput="formatAndCalc(this)" class="w-full p-1.5 border border-gray-200 rounded text-center">
+                    </td>
+                    <td class="px-3 py-2 border-r border-gray-200">
+                        <div class="relative flex items-center">
+                            <input type="text" id="${rId}-temp" value="${formatWithDots(room.temp)}" oninput="formatAndCalc(this)" class="w-full p-1.5 pr-6 border border-gray-200 rounded text-right">
+                            <span class="absolute right-2 text-xs font-bold text-gray-400">K</span>
+                        </div>
+                    </td>
+                    <td class="px-3 py-2 border-r border-gray-200">
+                        <div class="relative flex items-center">
+                            <input type="text" id="${rId}-other" value="${formatWithDots(room.other)}" oninput="formatAndCalc(this)" class="w-full p-1.5 pr-6 border border-gray-200 rounded text-right">
+                            <span class="absolute right-2 text-xs font-bold text-gray-400">K</span>
+                        </div>
+                    </td>
+                    <td class="px-3 py-2 text-center">
+                        <button type="button" onclick="deleteRoom(${i})" class="p-1.5 text-red-500 hover:text-red-700 transition">
+                            <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            updateRoomDropdownOptions();
+        }
+
+        // --- CẬP NHẬT TÙY CHỌN DANH SÁCH DROPDOWN PHÒNG ---
+        function updateRoomDropdownOptions() {
+            let select = document.getElementById('select-room-view');
+            select.innerHTML = '<option value="all">Xuất TẤT CẢ các phòng</option>';
+            rooms.forEach((r, i) => {
+                let opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = `${r.id} - ${r.name || 'Trống'}`;
+                select.appendChild(opt);
+            });
+        }
+
+        // --- THÊM PHÒNG MỚI ---
+        function addNewRoom() {
+            saveCurrentTableData();
+            let nextNum = rooms.length + 1;
+            rooms.push({
+                id: `Phòng ${nextNum}`,
+                name: `Người thuê ${nextNum}`,
+                rent: 0,
+                eNew: 0,
+                eOld: 0,
+                wNew: 0,
+                wOld: 0,
+                temp: 0,
+                other: 0
+            });
+            renderInputTable();
+            calculateAll();
+        }
+
+        // --- XÓA PHÒNG ---
+        function deleteRoom(index) {
+            saveCurrentTableData();
+            rooms.splice(index, 1);
+            rooms.forEach((r, i) => {
+                r.id = `Phòng ${i+1}`;
+            });
+            renderInputTable();
+            calculateAll();
+        }
+
+        // --- TÍNH TOÁN TOÀN BỘ SỐ LIỆU ---
+        let globalCalcData = {};
+
+        function calculateAll() {
+            saveCurrentTableData();
+
+            let address = document.getElementById('address').value;
+            let month = parseInt(document.getElementById('month').value, 10) || 1;
+            let year = parseInt(document.getElementById('year').value, 10) || 2026;
+            let totalElectricBill = parseFormattedNumber(document.getElementById('total-electric-bill').value);
+            let trashFee = parseFormattedNumber(document.getElementById('trash-fee').value);
+            let waterPrice = parseFormattedNumber(document.getElementById('water-price').value);
+
+            let totalElectricConsumption = 0;
+            let totalWaterConsumption = 0;
+            rooms.forEach(r => {
+                totalElectricConsumption += Math.max(0, r.eNew - r.eOld);
+                totalWaterConsumption += Math.max(0, r.wNew - r.wOld);
+            });
+
+            let rawElectricPriceUnit = totalElectricConsumption > 0 ? (totalElectricBill / totalElectricConsumption) : 0;
+            let electricPricePerKwh = parseFloat(rawElectricPriceUnit.toFixed(2));
+
+            document.getElementById('calculated-elec-rate').textContent = `${electricPricePerKwh.toFixed(2)} K`;
+
+            globalCalcData = {
+                address,
+                month,
+                year,
+                totalElectricBill,
+                trashFee,
+                waterPrice,
+                totalElectricConsumption,
+                totalWaterConsumption,
+                electricPricePerKwh,
+                roomsCalc: rooms.map(r => {
+                    let eUsed = Math.max(0, r.eNew - r.eOld);
+                    let wUsed = Math.max(0, r.wNew - r.wOld);
+                    let eCost = Math.round(eUsed * electricPricePerKwh);
+                    let wCost = Math.round(wUsed * waterPrice);
+                    let sumThree = eCost + wCost + trashFee;
+                    let total = r.rent + sumThree + r.temp + r.other;
+
+                    return {
+                        ...r,
+                        eUsed,
+                        wUsed,
+                        eCost,
+                        wCost,
+                        sumThree,
+                        total
+                    };
+                })
+            };
+        }
+
+        // --- RENDER PHIẾU THU SẮC NÉT (TAB 2) ---
+        function renderInvoices() {
+            calculateAll();
+
+            let filter = document.getElementById('select-room-view').value;
+            let renderList = document.getElementById('invoice-render-area');
+            renderList.innerHTML = '';
+
+            let listToRender = [];
+            if (filter === 'all') {
+                listToRender = globalCalcData.roomsCalc;
+            } else {
+                let index = parseInt(filter, 10);
+                if (!isNaN(index) && globalCalcData.roomsCalc[index]) {
+                    listToRender = [globalCalcData.roomsCalc[index]];
+                }
+            }
+
+            let prevMonth = globalCalcData.month - 1;
+            let prevYear = globalCalcData.year;
+            if (prevMonth === 0) {
+                prevMonth = 12;
+                prevYear -= 1;
+            }
+
+            listToRender.forEach(r => {
+                let invoiceDiv = document.createElement('div');
+                invoiceDiv.className = "p-4 bg-white rounded-xl shadow border border-gray-200 flex flex-col items-center justify-between";
+                
+                let domId = `invoice-box-${r.id.replace(/\s+/g, '')}`;
+
+                invoiceDiv.innerHTML = `
+                    <div id="${domId}" class="receipt-font bg-white text-black p-8 border border-gray-300 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
+                        <div>
+                            <!-- Header -->
+                            <div class="flex justify-between items-start border-b border-gray-200 pb-2 mb-4">
+                                <div class="font-bold text-base leading-tight">${r.name} tháng ${prevMonth}/${prevYear}</div>
+                                <div class="text-right text-xs text-gray-500">${globalCalcData.address}</div>
+                            </div>
+
+                            <!-- Tính toán Điện/Nước/Rác chi tiết -->
+                            <div class="space-y-1.5 leading-relaxed text-gray-900">
+                                <div class="grid grid-cols-[auto_auto_1fr_auto_auto] gap-x-2 items-center">
+    
+									<span>Đ: ${r.eNew} - ${r.eOld}</span>
+									<span>=</span>
+									<span>${r.eUsed} x ${parseFloat(globalCalcData.electricPricePerKwh.toFixed(2))}k</span><span>=</span>
+									<span class="text-right">${r.eCost} k</span>
+
+									<span>N: ${r.wNew} - ${r.wOld}</span>
+									<span>=</span>
+									<span>${r.wUsed} x ${globalCalcData.waterPrice}k</span><span>=</span>
+									<span class="text-right">${r.wCost} k</span>
+
+									<span class="col-span-4">R:</span>
+									<span class="text-right">${globalCalcData.trashFee} k</span>
+								</div>
+                                
+                                <div class="ml-auto w-1/6 border-t border-gray-400 mt-1 pt-1 flex justify-between">
+                                    <span>&nbsp;</span>
+                                    <span>${r.sumThree} k</span>
+                                </div>
+                            </div>
+
+                            <!-- Tổng tiền trọ hàng tháng -->
+                            <div class="ml-auto w-2/3 mt-6 space-y-2 leading-relaxed text-gray-900">
+                                <div class="flex justify-between">
+                                    <span>Trọ tháng ${globalCalcData.month}:</span>
+                                    <span>${r.rent} k</span>
+                                </div>
+                                <div class="flex justify-between text-gray-600">
+                                    <span>Đ+N+R:</span>
+                                    <span>${r.sumThree} k</span>
+                                </div>
+                                ${r.temp > 0 ? `
+                                <div class="flex justify-between text-gray-600">
+                                    <span>Phí tạm trú:</span>
+                                    <span>${r.temp} k</span>
+                                </div>` : ''}
+                                ${r.other > 0 ? `
+                                <div class="flex justify-between text-gray-600">
+                                    <span>Khác:</span>
+                                    <span>${r.other} k</span>
+                                </div>` : ''}
+
+                                <!-- Đường gạch phân cách và Tổng tiền chung to rõ ràng -->
+                                <div class="border-t border-black pt-2 flex justify-between items-baseline mt-4">
+                                    <span class="font-bold text-base">Tổng cộng:</span>
+                                    <span class="text-xl font-extrabold text-right ">${r.total} k</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bảng Thống Kê Chi Phí Cả Dãy Bên Dưới (Mẫu như hình) -->
+                        <div class="mt-4 border-t border-dashed border-gray-400 pt-4 text-[11px] text-gray-800">
+                            <div class="font-bold mb-1 underline uppercase text-emerald-800">${globalCalcData.address} - Điện tháng ${prevMonth}:</div>
+                            <div class="space-y-0.5 font-mono">
+                                ${globalCalcData.roomsCalc.map(rc => `
+                                    <div class="flex justify-between">
+                                        <span>${rc.id}: ${rc.eNew} - ${rc.eOld} = ${rc.eUsed} x ${parseFloat(globalCalcData.electricPricePerKwh.toFixed(2))}k</span>
+                                        <span>= ${rc.eCost} k</span>
+                                    </div>
+                                `).join('')}
+                                <div class="border-t border-gray-300 pt-1 mt-1 flex justify-between font-bold">
+                                    <span>Tổng dùng: ${globalCalcData.totalElectricConsumption} kWh [${globalCalcData.totalElectricBill} k / ${globalCalcData.totalElectricConsumption} = ${parseFloat(globalCalcData.electricPricePerKwh.toFixed(2))}]</span>
+                                    <span>Tổng:  ${globalCalcData.roomsCalc.reduce((s, rc) => s + rc.eCost, 0)} k</span>
+                                </div>
+                            </div>
+
+                            <div class="font-bold mb-1 underline uppercase text-blue-800">${globalCalcData.address} - Nước tháng ${prevMonth}:</div>
+                            <div class="space-y-0.5 font-mono">
+                                ${globalCalcData.roomsCalc.map(rc => `
+                                    <div class="flex justify-between">
+                                        <span>${rc.id}: ${rc.wNew} - ${rc.wOld} = ${rc.wUsed} x ${globalCalcData.waterPrice}k</span>
+                                        <span>= ${rc.wCost} k</span>
+                                    </div>
+                                `).join('')}
+                                <div class="border-t border-gray-300 pt-1 mt-1 flex justify-between font-bold">
+                                    <span>Tổng dùng: ${globalCalcData.totalWaterConsumption} khối</span>
+                                    <span>Tổng: ${globalCalcData.roomsCalc.reduce((s, rc) => s + rc.wCost, 0)} k</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nút Tải Ảnh Cho Riêng Thẻ Này -->
+                    <button type="button" onclick="downloadSingleImage('${domId}', '${r.name || r.id}')" class="mt-4 px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded shadow transition text-xs flex items-center gap-1.5 no-print">
+                        <svg class="w-4 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Lưu ảnh phiếu này
+                    </button>
+                `;
+
+                renderList.appendChild(invoiceDiv);
+            });
+        }
+
+        // --- XUẤT 1 ẢNH DUY NHẤT ---
+        function downloadSingleImage(domId, name) {
+            const element = document.getElementById(domId);
+            if (!element) return;
+            
+            showToast("Đang chuẩn bị xuất ảnh...", "info");
+
+            html2canvas(element, {
+                scale: 3, // Tăng chất lượng hình ảnh lên cực kỳ sắc nét
+                useCORS: true,
+                backgroundColor: "#ffffff"
+            }).then(canvas => {
+                let link = document.createElement('a');
+                link.download = `PhieuThu_${name.replace(/\s+/g, '_')}_T${globalCalcData.month - 1}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                showToast("Đã tải ảnh về thành công!", "success");
+            }).catch(e => {
+                console.error("Lỗi xuất ảnh:", e);
+                showToast("Lỗi xuất ảnh. Vui lòng thử lại.", "error");
+            });
+        }
+
+        // --- XUẤT HÀNG LOẠT TOÀN BỘ PHIẾU THU ---
+        async function downloadAllImages() {
+            let prevMonth = globalCalcData.month - 1;
+            showToast("Bắt đầu xử lý xuất ảnh hàng loạt...", "info");
+            
+            for (let i = 0; i < globalCalcData.roomsCalc.length; i++) {
+                let r = globalCalcData.roomsCalc[i];
+                let domId = `invoice-box-${r.id.replace(/\s+/g, '')}`;
+                let element = document.getElementById(domId);
+                
+                if (element) {
+                    await html2canvas(element, {
+                        scale: 3,
+                        useCORS: true,
+                        backgroundColor: "#ffffff"
+                    }).then(canvas => {
+                        let link = document.createElement('a');
+                        link.download = `PhieuThu_${(r.name || r.id).replace(/\s+/g, '_')}_T${prevMonth}.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                    });
+                    // Giãn cách thời gian tải xuống để trình duyệt không ngăn chặn tải nhiều tệp cùng lúc
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                }
+            }
+            showToast("Hoàn tất tải xuống toàn bộ ảnh!", "success");
+        }
+
+        // --- KHỞI CHẠY ---
+        window.onload = function() {
+            renderInputTable();
+            calculateAll();
+        };
+    </script>
+</body>
+</html>
