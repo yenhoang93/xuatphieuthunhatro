@@ -368,7 +368,9 @@
             } else {
                 document.getElementById('tab-output').classList.remove('hidden');
                 outputBtn.className = "flex-1 py-2.5 text-center text-sm font-bold rounded-lg text-white bg-blue-600 shadow-md transition-all duration-200";
-                renderInvoices();
+                setTimeout(() => {
+					renderInvoices();
+				}, 50);
             }
         } 
 
