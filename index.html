@@ -247,7 +247,7 @@
                         In tất cả (PDF)
                     </button>
                     <button type="button" onclick="downloadAllImages()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition flex items-center justify-center gap-2">
-                        Lưu hình ảnh (PNG)
+                        Lưu hình ảnh (jpg)
                     </button>
                 </div>
             </div>
@@ -687,8 +687,8 @@
             };
         }
 
-        // --- RENDER PHIẾU THU SẮC NÉT (TAB 2) ---
-        function renderInvoices() {
+        // --- RENDER PHIẾU THU SẮC NÉT (TAB 2 - CẢI TIẾN RENDER ẢNH TỰ ĐỘNG KHÔNG CẦN BẤM NÚT) ---
+        async function renderInvoices() {
             calculateAll();
 
             let filter = document.getElementById('select-room-view').value;
@@ -727,11 +727,10 @@
                 }
             }
 
-            // Logic tháng mới: Tháng nhập chính là tháng điện nước (M). Tiền trọ sẽ tính tháng M+1
-            let invoiceMonth = globalCalcData.month; // Tháng điện nước (ví dụ: tháng 6)
+            let invoiceMonth = globalCalcData.month; // Tháng điện nước
             let invoiceYear = globalCalcData.year;
 
-            let rentMonth = invoiceMonth + 1; // Tiền trọ tháng M+1 (ví dụ: tháng 7)
+            let rentMonth = invoiceMonth + 1; // Tiền trọ tháng tiếp theo
             let rentYear = invoiceYear;
             if (rentMonth > 12) {
                 rentMonth = 1;
@@ -900,7 +899,7 @@
                     useCORS: true,
                     backgroundColor: "#ffffff"
                 }).then(canvas => {
-                    const imgData = canvas.toDataURL('image/png');
+                    const imgData = canvas.toDataURL('image/jpg');
                     const filename = isShared 
                         ? `DienNuoc_${dayData.address.replace(/\s+/g, '_')}_T${invoiceMonth}`
                         : `PhieuThu_${dayData.address.replace(/\s+/g, '_')}_${(r.name || r.id).replace(/\s+/g, '_')}_T${invoiceMonth}`;
@@ -938,7 +937,7 @@
                 showToast("Trên iPhone, vui lòng nhấn giữ trực tiếp vào ảnh phía trên 2 giây và chọn 'Lưu vào Ảnh'.", "info");
             } else {
                 let link = document.createElement('a');
-                link.download = `${filename}.png`;
+                link.download = `${filename}.jpg`;
                 link.href = imgData;
                 document.body.appendChild(link);
                 link.click();
@@ -968,7 +967,7 @@
                 let imgData = card.getAttribute('data-imgdata');
 
                 let link = document.createElement('a');
-                link.download = `${filename}.png`;
+                link.download = `${filename}.jpg`;
                 link.href = imgData;
                 document.body.appendChild(link);
                 link.click();
