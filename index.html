@@ -352,20 +352,31 @@
 
         // --- ĐIỀU HƯỚNG TAB ---
                  function switchTab(tabId) {
-            document.getElementById('tab-input').classList.add('hidden');
-            document.getElementById('tab-output').classList.add('hidden');
-            document.getElementById('tab-input-btn').classList.remove('tab-active');
-            document.getElementById('tab-output-btn').classList.remove('tab-active');
+    // 1. Ẩn toàn bộ nội dung các tab
+    document.getElementById('tab-input').classList.add('hidden');
+    document.getElementById('tab-output').classList.add('hidden');
+    
+    const inputBtn = document.getElementById('tab-input-btn');
+    const outputBtn = document.getElementById('tab-output-btn');
 
-            if (tabId === 'input') {
-                document.getElementById('tab-input').classList.remove('hidden');
-                document.getElementById('tab-input-btn').classList.add('tab-active');
-            } else {
-                document.getElementById('tab-output').classList.remove('hidden');
-                document.getElementById('tab-output-btn').classList.add('tab-active');
-                renderInvoices();
-            }
-        }
+    // Khai báo các class đại diện cho trạng thái kích hoạt (Active) của từng nút
+    const inputActive = ['bg-emerald-600', 'text-white', 'shadow-md', 'font-bold'];
+    const outputActive = ['bg-blue-600', 'text-white', 'shadow-md', 'font-bold'];
+
+    // 2. Xóa bỏ trạng thái kích hoạt cũ của cả hai nút
+    inputBtn.classList.remove(...inputActive);
+    outputBtn.classList.remove(...outputActive);
+
+    // 3. Kích hoạt đúng tab được chọn
+    if (tabId === 'input') {
+        document.getElementById('tab-input').classList.remove('hidden');
+        inputBtn.classList.add(...inputActive);
+    } else {
+        document.getElementById('tab-output').classList.remove('hidden');
+        outputBtn.classList.add(...outputActive);
+        renderInvoices();
+    }
+}
         // --- LƯU TRẠNG THÁI TABLE TỪ INPUT ---
         function saveCurrentTableData() {
             // Lưu dữ liệu Dãy 45
