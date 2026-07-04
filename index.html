@@ -351,26 +351,46 @@
         }
 
         // --- ĐIỀU HƯỚNG TAB ---
-        function switchTab(tabId) {
-            document.getElementById('tab-input').classList.add('hidden');
-            document.getElementById('tab-output').classList.add('hidden');
-            
-            const inputBtn = document.getElementById('tab-input-btn');
-            const outputBtn = document.getElementById('tab-output-btn');
-            
-            // Khôi phục định dạng cơ bản của nút chưa được chọn
-         
-            outputBtn.className = "flex-1 py-2.5 text-center text-sm font-semibold text-gray-500 rounded-lg hover:text-emerald-600 hover:bg-slate-200/50 transition-all duration-200";
+        const inputTab = document.getElementById('tab-input');
+    const outputTab = document.getElementById('tab-output');
+    const inputBtn = document.getElementById('tab-input-btn');
+    const outputBtn = document.getElementById('tab-output-btn');
 
-            if (tabId === 'input') {
-                document.getElementById('tab-input').classList.remove('hidden');
-                inputBtn.className = "flex-1 py-2.5 text-center text-sm font-bold rounded-lg text-white bg-emerald-600 shadow-md transition-all duration-200";
-            } else {
-                document.getElementById('tab-output').classList.remove('hidden');
-                outputBtn.className = "flex-1 py-2.5 text-center text-sm font-bold rounded-lg text-white bg-emerald-600 shadow-md transition-all duration-200";
-                renderInvoices();
-            }
-        }
+    // Các class thay đổi động đại diện cho trạng thái Active (Kích hoạt)
+    const activeClasses = ['font-bold', 'text-white', 'bg-emerald-600', 'shadow-md'];
+    
+    // Các class thay đổi động đại diện cho trạng thái Inactive (Mặc định)
+    const inactiveClasses = ['font-semibold', 'text-gray-500', 'hover:text-emerald-600', 'hover:bg-slate-200/50'];
+
+    if (tabId === 'input') {
+        // 1. Quản lý hiển thị nội dung tab
+        inputTab.classList.remove('hidden');
+        outputTab.classList.add('hidden');
+
+        // 2. Cập nhật trạng thái nút input thành Active
+        inputBtn.classList.add(...activeClasses);
+        inputBtn.classList.remove(...inactiveClasses);
+
+        // 3. Đưa nút output về trạng thái Inactive
+        outputBtn.classList.add(...inactiveClasses);
+        outputBtn.classList.remove(...activeClasses);
+    } else {
+        // 1. Quản lý hiển thị nội dung tab
+        outputTab.classList.remove('hidden');
+        inputTab.classList.add('hidden');
+
+        // 2. Cập nhật trạng thái nút output thành Active
+        outputBtn.classList.add(...activeClasses);
+        outputBtn.classList.remove(...inactiveClasses);
+
+        // 3. Đưa nút input về trạng thái Inactive
+        inputBtn.classList.add(...inactiveClasses);
+        inputBtn.classList.remove(...activeClasses);
+
+        // 4. Render lại danh sách hóa đơn
+        renderInvoices();
+    }
+}
 
         // --- LƯU TRẠNG THÁI TABLE TỪ INPUT ---
         function saveCurrentTableData() {
