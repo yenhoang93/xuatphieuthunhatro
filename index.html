@@ -769,7 +769,7 @@
                 let tempHtml = '';
                 if (isShared) {
                     tempHtml = `
-                        <div class="receipt-font bg-white text-black p-8 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
+                        <div class="receipt-font bg-white text-black p-6 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
                             <div>
                                 <div class="text-center border-b border-gray-200 pb-2 mb-4">
                                     <div class="font-bold text-base leading-tight uppercase">Bảng chia điện nước - ${dayData.address}</div>
@@ -785,8 +785,8 @@
                                                     <span>= ${rc.eCost} k</span>
                                                 </div>
                                             `).join('')}
-                                            <div class="border-t border-gray-300 pt-2 mt-4 flex justify-between font-bold">
-                                                <span>Tổng dùng: ${dayData.totalElectricConsumption} kWh [${dayData.totalElectricBill} k / ${dayData.totalElectricConsumption} = ${parseFloat(dayData.electricPricePerKwh.toFixed(2))}]</span>
+                                            <div class="border-t border-gray-300 pt-4 mt-8 flex justify-between font-bold">
+                                                <span>Tổng dùng: ${dayData.totalElectricConsumption} kWh [${dayData.totalElectricBill} k / ${dayData.totalElectricConsumption} = ${parseFloat(dayData.electricPricePerKwh.toFixed(2))} k]</span>
                                                 <span>Tổng: ${dayData.roomsCalc.reduce((s, rc) => s + rc.eCost, 0)} k</span>
                                             </div>
                                         </div>
@@ -800,7 +800,7 @@
                                                     <span>= ${rc.wCost} k</span>
                                                 </div>
                                             `).join('')}
-                                            <div class="border-t border-gray-300 pt-2 mt-4 flex justify-between font-bold">
+                                            <div class="border-t border-gray-300 pt-4 mt-8 flex justify-between font-bold">
                                                 <span>Tổng dùng: ${dayData.totalWaterConsumption} khối</span>
                                                 <span>Tổng: ${dayData.roomsCalc.reduce((s, rc) => s + rc.wCost, 0)} k</span>
                                             </div>
@@ -812,7 +812,7 @@
                     `;
                 } else {
                     tempHtml = `
-                        <div class="receipt-font bg-white text-black p-8 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
+                        <div class="receipt-font bg-white text-black p-6 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
                             <div>
                                 <div class="flex justify-between items-start border-b border-gray-200 pb-2 mb-4">
                                     <div class="font-bold text-base leading-tight">${r.name || r.id} tháng ${invoiceMonth}/${invoiceYear}</div>
