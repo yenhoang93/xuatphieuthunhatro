@@ -233,7 +233,7 @@
         <div id="tab-output" class="space-y-6 hidden">
             <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4 no-print">
                 <div class="flex items-center gap-3 w-full sm:w-auto">
-                    <span class="font-semibold text-gray-700 whitespace-nowrap">Chọn phòng xuất phiếu:</span>
+                    <span class="font-semibold text-gray-700 whitespace-nowrap">Lựa chọn xuất:</span>
                     <select id="select-room-view" onchange="renderInvoices()" class="p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 bg-white w-full sm:w-64">
                         <option value="all">Xuất tất cả 2 dãy</option>
                         <option value="day45">Xuất Dãy 45</option>
@@ -247,7 +247,7 @@
                         In tất cả (PDF)
                     </button>
                     <button type="button" onclick="downloadAllImages()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition flex items-center justify-center gap-2">
-                        Lưu hình ảnh (PNG)
+                        Lưu tất cả (JPEG)
                     </button>
                 </div>
             </div>
@@ -359,7 +359,7 @@
             const outputBtn = document.getElementById('tab-output-btn');
             
             // Khôi phục định dạng cơ bản của nút chưa được chọn
-            inputBtn.className = "flex-1 py-2.5 text-center text-sm font-semibold text-gray-500 rounded-lg hover:text-emerald-600 hover:bg-slate-200/50 transition-all duration-200";
+         
             outputBtn.className = "flex-1 py-2.5 text-center text-sm font-semibold text-gray-500 rounded-lg hover:text-emerald-600 hover:bg-slate-200/50 transition-all duration-200";
 
             if (tabId === 'input') {
