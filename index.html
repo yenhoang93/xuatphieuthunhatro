@@ -29,17 +29,20 @@
     </style>
 </head>
 <body class="py-6 px-4 md:px-8">
-
-    <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-10">
+ 	
+	<!-- Container ẩn phục vụ kết xuất ảnh tự động -->
+    <div id="hidden-capture-container" class="absolute left-[-9999px] top-[-9999px]" style="width: 420px;"></div>
+    
+	<div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-10">
         <!-- Tiêu đề chính -->
         <h1 class="text-2xl md:text-3xl font-extrabold text-emerald-700 text-center mb-6">Quản lý & xuất phiếu tính tiền nhà trọ</h1>
 
         <!-- Thanh điều hướng Tab -->
-        <div class="flex border-b border-gray-200 mb-6 border-b-2">
-            <button id="tab-input-btn" onclick="switchTab('input')" class="flex-1 py-3 text-center font-medium text-gray-500 border-b-2 border-transparent hover:text-emerald-600 transition-all tab-active">
+        <div class="flex p-1.5 bg-slate-100 rounded-xl mb-8 no-print max-w-md mx-auto shadow-inner">
+            <button id="tab-input-btn" onclick="switchTab('input')" class="flex-1 py-2.5 text-center text-sm font-bold rounded-lg text-emerald-700 bg-white shadow-sm transition-all">
                 1. Nhập thông số
             </button>
-            <button id="tab-output-btn" onclick="switchTab('output')" class="flex-1 py-3 text-center font-medium text-gray-500 border-b-2 border-transparent hover:text-emerald-600 transition-all">
+            <button id="tab-output-btn" onclick="switchTab('output')" class="flex-1 py-3 text-center text-sm font-medium text-gray-500 hover:text-emerald-600 transition-all">
                 2. Xuất phiếu thu
             </button>
         </div>
@@ -351,15 +354,20 @@
         function switchTab(tabId) {
             document.getElementById('tab-input').classList.add('hidden');
             document.getElementById('tab-output').classList.add('hidden');
-            document.getElementById('tab-input-btn').classList.remove('tab-active');
-            document.getElementById('tab-output-btn').classList.remove('tab-active');
+            
+            const inputBtn = document.getElementById('tab-input-btn');
+            const outputBtn = document.getElementById('tab-output-btn');
+            
+            // Khôi phục định dạng cơ bản của nút chưa được chọn
+            inputBtn.className = "flex-1 py-2.5 text-center text-sm font-semibold text-gray-500 rounded-lg hover:text-emerald-600 hover:bg-slate-200/50 transition-all duration-200";
+            outputBtn.className = "flex-1 py-2.5 text-center text-sm font-semibold text-gray-500 rounded-lg hover:text-emerald-600 hover:bg-slate-200/50 transition-all duration-200";
 
             if (tabId === 'input') {
                 document.getElementById('tab-input').classList.remove('hidden');
-                document.getElementById('tab-input-btn').classList.add('tab-active');
+                inputBtn.className = "flex-1 py-2.5 text-center text-sm font-bold rounded-lg text-white bg-emerald-600 shadow-md transition-all duration-200";
             } else {
                 document.getElementById('tab-output').classList.remove('hidden');
-                document.getElementById('tab-output-btn').classList.add('tab-active');
+                outputBtn.className = "flex-1 py-2.5 text-center text-sm font-bold rounded-lg text-white bg-emerald-600 shadow-md transition-all duration-200";
                 renderInvoices();
             }
         }
@@ -685,7 +693,7 @@
         }
 
         // --- RENDER PHIẾU THU SẮC NÉT (TAB 2) ---
-        function renderInvoices() {
+        async function renderInvoices() {
             calculateAll();
 
             let filter = document.getElementById('select-room-view').value;
@@ -724,42 +732,49 @@
                 }
             }
 
-            // Logic tháng mới: Tháng nhập chính là tháng điện nước (M). Tiền trọ sẽ tính tháng M+1
-            let invoiceMonth = globalCalcData.month; // Tháng điện nước (ví dụ: tháng 6)
+            let invoiceMonth = globalCalcData.month; // Tháng điện nước
             let invoiceYear = globalCalcData.year;
 
-            let rentMonth = invoiceMonth + 1; // Tiền trọ tháng M+1 (ví dụ: tháng 7)
+            let rentMonth = invoiceMonth + 1; // Tiền trọ tháng tiếp theo
             let rentYear = invoiceYear;
             if (rentMonth > 12) {
                 rentMonth = 1;
                 rentYear += 1;
             }
 
-            listToRender.forEach(item => {
+            // Tạo từng thẻ chứa hiệu ứng tải trước khi chuyển nó thành ảnh tĩnh hoàn toàn
+            for (let i = 0; i < listToRender.length; i++) {
+                let item = listToRender[i];
                 let isShared = item.type === 'shared';
                 let r = item.room;
                 let dayData = item.dayData;
-                let invoiceDiv = document.createElement('div');
-                invoiceDiv.className = "p-4 bg-white rounded-xl shadow border border-gray-200 flex flex-col items-center justify-between";
+
+                let cardDiv = document.createElement('div');
+                cardDiv.className = "p-4 bg-white rounded-xl shadow border border-gray-200 flex flex-col items-center justify-between";
                 
-                let domId = isShared 
-                    ? `invoice-box-${dayData.address.replace(/\s+/g, '')}-DienNuoc`
-                    : `invoice-box-${dayData.address.replace(/\s+/g, '')}-${r.id.replace(/\s+/g, '')}`;
+                // Trạng thái spinner đang xử lý chụp
+                cardDiv.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-[350px] w-[350px]">
+                        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-700"></div>
+                        <p class="text-xs text-gray-500 mt-3 font-semibold">Đang xử lý ảnh phiếu thu...</p>
+                    </div>
+                `;
+                renderList.appendChild(cardDiv);
 
-                let invoiceHtml = '';
+                // Dựng HTML cấu trúc phiếu thu bên trong khối ẩn để chụp
+                let hiddenContainer = document.getElementById('hidden-capture-container');
+                let tempWrapper = document.createElement('div');
+                tempWrapper.className = "p-4 bg-white";
 
+                let tempHtml = '';
                 if (isShared) {
-                    // Chỉ render bảng thống kê điện nước cả dãy
-                    invoiceHtml = `
-                        <div id="${domId}" class="receipt-font bg-white text-black p-8 border border-gray-300 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
+                    tempHtml = `
+                        <div class="receipt-font bg-white text-black p-8 border border-gray-300 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
                             <div>
-                                <!-- Header -->
                                 <div class="text-center border-b border-gray-200 pb-2 mb-4">
                                     <div class="font-bold text-base leading-tight uppercase">Bảng chia điện nước - ${dayData.address}</div>
                                     <div class="text-xs text-gray-500 mt-1">Tháng ${invoiceMonth}/${invoiceYear}</div>
                                 </div>
-
-                                <!-- Bảng Thống Kê Chi Phí Cả Dãy -->
                                 <div class="text-[11px] text-gray-800 leading-relaxed space-y-4">
                                     <div>
                                         <div class="font-bold mb-1 underline uppercase text-emerald-800">${dayData.address} - Điện tháng ${invoiceMonth}:</div>
@@ -776,7 +791,6 @@
                                             </div>
                                         </div>
                                     </div>
-
                                     <div>
                                         <div class="font-bold mb-1 underline uppercase text-blue-800">${dayData.address} - Nước tháng ${invoiceMonth}:</div>
                                         <div class="space-y-0.5 font-mono">
@@ -795,28 +809,17 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Nút Tải Ảnh -->
-                        <button type="button" onclick="downloadSingleImage('${domId}', 'DienNuoc_${dayData.address.replace(/\s+/g, '_')}')" class="mt-4 px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded shadow transition text-xs flex items-center gap-1.5 no-print">
-                            <svg class="w-4 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            Lưu ảnh bảng chia điện nước
-                        </button>
                     `;
                 } else {
-                    // Render đầy đủ phiếu thu cá nhân
-                    invoiceHtml = `
-                        <div id="${domId}" class="receipt-font bg-white text-black p-8 border border-gray-300 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
+                    tempHtml = `
+                        <div class="receipt-font bg-white text-black p-8 border border-gray-300 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
                             <div>
-                                <!-- Header -->
                                 <div class="flex justify-between items-start border-b border-gray-200 pb-2 mb-4">
                                     <div class="font-bold text-base leading-tight">${r.name || r.id} tháng ${invoiceMonth}/${invoiceYear}</div>
                                     <div class="text-right text-xs text-gray-500">${dayData.address}</div>
                                 </div>
-
-                                <!-- Tính toán Điện/Nước/Rác chi tiết -->
                                 <div class="space-y-1.5 leading-relaxed text-gray-900">
                                     <div class="grid grid-cols-[auto_auto_1fr_auto_auto] gap-x-2 items-center">
-        
 										<span>Đ: ${r.eNew} - ${r.eOld}</span>
 										<span>=</span>
 										<span>${r.eUsed} x ${parseFloat(dayData.electricPricePerKwh.toFixed(2))}k</span><span>=</span>
@@ -830,14 +833,11 @@
 										<span class="col-span-4">R:</span>
 										<span class="text-right">${dayData.trashFee} k</span>
 									</div>
-                                    
                                     <div class="ml-auto w-1/6 border-t border-gray-400 mt-1 pt-1 flex justify-between">
                                         <span>&nbsp;</span>
                                         <span>${r.sumThree} k</span>
                                     </div>
                                 </div>
-
-                                <!-- Tổng tiền trọ hàng tháng (Cộng tiền trọ kỳ sau M+1) -->
                                 <div class="ml-auto w-2/3 mt-6 space-y-2 leading-relaxed text-gray-900">
                                     <div class="flex justify-between">
                                         <span>Trọ tháng ${rentMonth}:</span>
@@ -857,16 +857,12 @@
                                         <span>Khác:</span>
                                         <span>${r.other} k</span>
                                     </div>` : ''}
-
-                                    <!-- Đường gạch phân cách và Tổng tiền chung to rõ ràng -->
-                                    <div class="border-t-2 border-black pt-2 flex justify-between items-baseline mt-4">
+                                    <div class="border-t border-black pt-2 flex justify-between items-baseline mt-4">
                                         <span class="font-bold text-base">Tổng cộng:</span>
                                         <span class="text-xl font-extrabold text-right ">${r.total} k</span>
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Bảng Thống Kê Chi Phí Cả Dãy Bên Dưới (Mẫu như hình) -->
                             <div class="mt-4 border-t border-dashed border-gray-400 pt-4 text-[11px] text-gray-800">
                                 <div class="font-bold mb-1 underline uppercase text-emerald-800">${dayData.address} - Điện tháng ${invoiceMonth}:</div>
                                 <div class="space-y-0.5 font-mono">
@@ -881,7 +877,6 @@
                                         <span>Tổng:  ${dayData.roomsCalc.reduce((s, rc) => s + rc.eCost, 0)} k</span>
                                     </div>
                                 </div>
-
                                 <div class="font-bold mb-1 underline uppercase text-blue-800">${dayData.address} - Nước tháng ${invoiceMonth}:</div>
                                 <div class="space-y-0.5 font-mono">
                                     ${dayData.roomsCalc.map(rc => `
@@ -897,132 +892,101 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Nút Tải Ảnh Cho Riêng Thẻ Này -->
-                        <button type="button" onclick="downloadSingleImage('${domId}', '${r.name || r.id}')" class="mt-4 px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded shadow transition text-xs flex items-center gap-1.5 no-print">
-                            <svg class="w-4 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            Lưu ảnh phiếu này
-                        </button>
                     `;
                 }
 
-                invoiceDiv.innerHTML = invoiceHtml;
-                renderList.appendChild(invoiceDiv);
-            });
-        }
+                tempWrapper.innerHTML = tempHtml;
+                hiddenContainer.appendChild(tempWrapper);
 
-        // --- XUẤT 1 ẢNH DUY NHẤT (Hỗ trợ tối đa cho Safari và Edge trên iOS) ---
-        function downloadSingleImage(domId, name) {
-            const element = document.getElementById(domId);
-            if (!element) return;
-            
-            showToast("Đang chuẩn bị xuất ảnh...", "info");
+                // Chụp tự động offscreen và lưu đè base64 thành ảnh phẳng trực quan
+                await html2canvas(tempWrapper, {
+                    scale: 3,
+                    useCORS: true,
+                    backgroundColor: "#ffffff"
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const filename = isShared 
+                        ? `DienNuoc_${dayData.address.replace(/\s+/g, '_')}_T${invoiceMonth}`
+                        : `PhieuThu_${dayData.address.replace(/\s+/g, '_')}_${(r.name || r.id).replace(/\s+/g, '_')}_T${invoiceMonth}`;
+                    
+                    // Lưu dữ liệu ảnh vào thuộc tính thẻ div để phục vụ tải hàng loạt cực nhanh
+                    cardDiv.setAttribute('data-filename', filename);
+                    cardDiv.setAttribute('data-imgdata', imgData);
 
-            html2canvas(element, {
-                scale: 3, // Giữ chất lượng hình ảnh lên cực kỳ sắc nét
-                useCORS: true,
-                backgroundColor: "#ffffff"
-            }).then(canvas => {
-                const imgData = canvas.toDataURL('image/jpeg');
+                    // Thiết lập giao diện hiển thị ảnh tĩnh sạch sẽ cho phép chạm và nhấn giữ trực tiếp
+                    cardDiv.innerHTML = `
+                        <div class="border border-gray-300 rounded-lg overflow-hidden shadow-sm">
+                            <img src="${imgData}" class="max-w-full h-auto object-contain cursor-pointer" alt="Phiếu thu">
+                        </div>
+                        <p class="text-xs text-red-600 font-bold mt-3 text-center no-print">
+                            👉 Nhấn giữ trực tiếp vào ảnh trên để lưu
+                        </p>
+                        <button type="button" onclick="downloadPreRenderedImage('${imgData}', '${filename}')" class="mt-4 px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded shadow transition text-xs flex items-center gap-1.5 no-print">
+                            <svg class="w-4 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            Lưu ảnh nhanh (PC/Android)
+                        </button>
+                    `;
+                }).catch(err => {
+                    console.error("Lỗi chuyển đổi ảnh:", err);
+                    cardDiv.innerHTML = `<p class="text-xs text-red-500">Lỗi chuyển đổi phiếu.</p>`;
+                });
 
-                if (isIOS()) {
-                    // Nếu là iPhone/iPad, hiển thị ảnh trong Popup để người dùng nhấn giữ lưu
-                    const modalImg = document.getElementById('ios-converted-image');
-                    modalImg.src = imgData;
-                    document.getElementById('ios-image-modal').classList.remove('hidden');
-                    showToast("Đã tạo ảnh thành công! Hãy làm theo hướng dẫn trên màn hình.", "success");
-                } else {
-                    // Tải xuống tự động trên PC / Android
-                    let link = document.createElement('a');
-                    link.download = `PhieuThu_${name.replace(/\s+/g, '_')}_T${globalCalcData.month}_${globalCalcData.year}.jpeg`;
-                    link.href = imgData;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    showToast("Đã tải ảnh về thành công!", "success");
-                }
-            }).catch(e => {
-                console.error("Lỗi xuất ảnh:", e);
-                showToast("Lỗi xuất ảnh. Vui lòng thử lại.", "error");
-            });
-        }
-
-        // --- XUẤT HÀNG LOẠT TOÀN BỘ PHIẾU THU ĐƯỢC CHỌN ---
-        async function downloadAllImages() {
-            let selectVal = document.getElementById('select-room-view').value;
-            let invoiceMonth = globalCalcData.month;
-            
-            let listToDownload = [];
-            if (selectVal === 'all') {
-                globalCalcData.day45.roomsCalc.forEach(room => {
-                    listToDownload.push({ room, dayData: globalCalcData.day45, type: 'room' });
-                });
-                globalCalcData.day47.roomsCalc.forEach(room => {
-                    listToDownload.push({ room, dayData: globalCalcData.day47, type: 'room' });
-                });
-            } else if (selectVal === 'day45') {
-                globalCalcData.day45.roomsCalc.forEach(room => {
-                    listToDownload.push({ room, dayData: globalCalcData.day45, type: 'room' });
-                });
-            } else if (selectVal === 'day47') {
-                globalCalcData.day47.roomsCalc.forEach(room => {
-                    listToDownload.push({ room, dayData: globalCalcData.day47, type: 'room' });
-                });
-            } else if (selectVal === 'dn45') {
-                listToDownload.push({ dayData: globalCalcData.day45, type: 'shared' });
-            } else if (selectVal === 'dn47') {
-                listToDownload.push({ dayData: globalCalcData.day47, type: 'shared' });
-            } else {
-                let parts = selectVal.split('-');
-                let day = parts[0];
-                let idx = parseInt(parts[1], 10);
-                if (day === '45' && globalCalcData.day45.roomsCalc[idx]) {
-                    listToDownload.push({ room: globalCalcData.day45.roomsCalc[idx], dayData: globalCalcData.day45, type: 'room' });
-                } else if (day === '47' && globalCalcData.day47.roomsCalc[idx]) {
-                    listToDownload.push({ room: globalCalcData.day47.roomsCalc[idx], dayData: globalCalcData.day47, type: 'room' });
-                }
+                // Dọn dẹp DOM tạm thời sau khi xử lý xong
+                hiddenContainer.removeChild(tempWrapper);
             }
+        }
 
+        // --- XỬ LÝ LƯU ẢNH TRỰC TIẾP TỪ BASE64 ĐÃ DỰNG SẴN ---
+        function downloadPreRenderedImage(imgData, filename) {
             if (isIOS()) {
-                showToast("Trên iPhone, vui lòng chọn từng phòng và dùng nút 'Lưu ảnh phiếu này' để nhấn giữ lưu ảnh.", "error");
+                showToast("Trên iPhone, vui lòng nhấn giữ trực tiếp vào ảnh phía trên 2 giây và chọn 'Lưu vào Ảnh'.", "info");
+            } else {
+                let link = document.createElement('a');
+                link.download = `${filename}.png`;
+                link.href = imgData;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToast("Đã tải ảnh về thành công!", "success");
+            }
+        }
+
+        // --- XUẤT HÀNG LOẠT TOÀN BỘ PHIẾU THU ĐÃ RENDER (Tận dụng bộ nhớ tạm không cần render lại) ---
+        async function downloadAllImages() {
+            if (isIOS()) {
+                showToast("Trên iPhone, vui lòng nhấn giữ trực tiếp vào từng ảnh trên màn hình để 'Lưu vào Ảnh'.", "error");
                 return;
             }
 
-            showToast("Bắt đầu xử lý xuất ảnh hàng loạt...", "info");
-            
-            for (let i = 0; i < listToDownload.length; i++) {
-                let item = listToDownload[i];
-                let isShared = item.type === 'shared';
-                let r = item.room;
-                let dayData = item.dayData;
-                
-                let domId = isShared 
-                    ? `invoice-box-${dayData.address.replace(/\s+/g, '')}-DienNuoc`
-                    : `invoice-box-${dayData.address.replace(/\s+/g, '')}-${r.id.replace(/\s+/g, '')}`;
-                    
-                let element = document.getElementById(domId);
-                
-                if (element) {
-                    await html2canvas(element, {
-                        scale: 3,
-                        useCORS: true,
-                        backgroundColor: "#ffffff"
-                    }).then(canvas => {
-                        let link = document.createElement('a');
-                        let filename = isShared 
-                            ? `DienNuoc_${dayData.address.replace(/\s+/g, '_')}_T${invoiceMonth}`
-                            : `PhieuThu_${dayData.address.replace(/\s+/g, '_')}_${(r.name || r.id).replace(/\s+/g, '_')}_T${invoiceMonth}`;
-                        link.download = `${filename}.png`;
-                        link.href = canvas.toDataURL('image/png');
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    });
-                    // Giãn cách thời gian tải xuống để tránh trình duyệt di động chặn
-                    await new Promise(resolve => setTimeout(resolve, 800));
-                }
+            const cards = document.querySelectorAll('#invoice-render-area > div[data-imgdata]');
+            if (cards.length === 0) {
+                showToast("Không tìm thấy ảnh phiếu thu nào sẵn sàng để tải.", "error");
+                return;
             }
-            showToast("Hoàn tất tải xuống tất cả ảnh được chọn!", "success");
+
+            showToast("Bắt đầu tải xuống hàng loạt hình ảnh...", "info");
+            
+            for (let i = 0; i < cards.length; i++) {
+                let card = cards[i];
+                let filename = card.getAttribute('data-filename');
+                let imgData = card.getAttribute('data-imgdata');
+
+                let link = document.createElement('a');
+                link.download = `${filename}.png`;
+                link.href = imgData;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Giãn cách thời gian tránh nghẽn tải xuống
+                await new Promise(resolve => setTimeout(resolve, 600));
+            }
+            showToast("Đã lưu hoàn tất tất cả ảnh về thiết bị!", "success");
+        }
+
+        // Đóng Popup xem ảnh cho iOS
+        function closeIosModal() {
+            document.getElementById('ios-image-modal').classList.add('hidden');
         }
 
         // --- KHỞI CHẠY ---
