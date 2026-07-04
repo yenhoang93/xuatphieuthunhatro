@@ -764,7 +764,7 @@
                 let tempHtml = '';
                 if (isShared) {
                     tempHtml = `
-                        <div class="receipt-font bg-white text-black p-8 border border-gray-300 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
+                        <div class="receipt-font bg-white text-black p-8 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
                             <div>
                                 <div class="text-center border-b border-gray-200 pb-2 mb-4">
                                     <div class="font-bold text-base leading-tight uppercase">Bảng chia điện nước - ${dayData.address}</div>
@@ -807,7 +807,7 @@
                     `;
                 } else {
                     tempHtml = `
-                        <div class="receipt-font bg-white text-black p-8 border border-gray-300 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
+                        <div class="receipt-font bg-white text-black p-8 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
                             <div>
                                 <div class="flex justify-between items-start border-b border-gray-200 pb-2 mb-4">
                                     <div class="font-bold text-base leading-tight">${r.name || r.id} tháng ${invoiceMonth}/${invoiceYear}</div>
