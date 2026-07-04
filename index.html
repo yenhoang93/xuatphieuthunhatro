@@ -247,7 +247,7 @@
                         In tất cả (PDF)
                     </button>
                     <button type="button" onclick="downloadAllImages()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition flex items-center justify-center gap-2">
-                        Lưu hình ảnh (jpg)
+                        Lưu hình ảnh (jpeg)
                     </button>
                 </div>
             </div>
@@ -899,7 +899,7 @@
                     useCORS: true,
                     backgroundColor: "#ffffff"
                 }).then(canvas => {
-                    const imgData = canvas.toDataURL('image/jpg');
+                    const imgData = canvas.toDataURL('image/jpeg');
                     const filename = isShared 
                         ? `DienNuoc_${dayData.address.replace(/\s+/g, '_')}_T${invoiceMonth}`
                         : `PhieuThu_${dayData.address.replace(/\s+/g, '_')}_${(r.name || r.id).replace(/\s+/g, '_')}_T${invoiceMonth}`;
@@ -937,7 +937,7 @@
                 showToast("Trên iPhone, vui lòng nhấn giữ trực tiếp vào ảnh phía trên 2 giây và chọn 'Lưu vào Ảnh'.", "info");
             } else {
                 let link = document.createElement('a');
-                link.download = `${filename}.jpg`;
+                link.download = `${filename}.jpeg`;
                 link.href = imgData;
                 document.body.appendChild(link);
                 link.click();
@@ -967,7 +967,7 @@
                 let imgData = card.getAttribute('data-imgdata');
 
                 let link = document.createElement('a');
-                link.download = `${filename}.jpg`;
+                link.download = `${filename}.jpeg`;
                 link.href = imgData;
                 document.body.appendChild(link);
                 link.click();
