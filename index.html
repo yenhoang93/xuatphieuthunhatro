@@ -351,29 +351,21 @@
         }
 
         // --- ĐIỀU HƯỚNG TAB ---
-         function switchTab(tabId) {
+                 function switchTab(tabId) {
             document.getElementById('tab-input').classList.add('hidden');
             document.getElementById('tab-output').classList.add('hidden');
-           
-            const inputBtn = document.getElementById('tab-input-btn');
-            const outputBtn = document.getElementById('tab-output-btn');
-            
-            // Khôi phục định dạng cơ bản của nút chưa được chọn
-            inputBtn.className = "flex-1 py-2.5 text-center text-sm font-semibold text-gray-500 rounded-lg hover:text-emerald-600 hover:bg-slate-200/50 transition-all duration-200";
-            outputBtn.className = "flex-1 py-2.5 text-center text-sm font-semibold text-gray-500 rounded-lg hover:text-blue-600 hover:bg-slate-200/50 transition-all duration-200";
+            document.getElementById('tab-input-btn').classList.remove('tab-active');
+            document.getElementById('tab-output-btn').classList.remove('tab-active');
 
             if (tabId === 'input') {
                 document.getElementById('tab-input').classList.remove('hidden');
-                inputBtn.className = "flex-1 py-2.5 text-center text-sm font-bold rounded-lg text-white bg-emerald-600 shadow-md transition-all duration-200";
+                document.getElementById('tab-input-btn').classList.add('tab-active');
             } else {
                 document.getElementById('tab-output').classList.remove('hidden');
-                outputBtn.className = "flex-1 py-2.5 text-center text-sm font-bold rounded-lg text-white bg-blue-600 shadow-md transition-all duration-200";
-                setTimeout(() => {
-					renderInvoices();
-				}, 500);
+                document.getElementById('tab-output-btn').classList.add('tab-active');
+                renderInvoices();
             }
-        } 
-
+        }
         // --- LƯU TRẠNG THÁI TABLE TỪ INPUT ---
         function saveCurrentTableData() {
             // Lưu dữ liệu Dãy 45
