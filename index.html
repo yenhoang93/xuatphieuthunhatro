@@ -39,10 +39,10 @@
 
         <!-- Thanh điều hướng Tab -->
         <div class="flex p-1.5 bg-slate-100 rounded-xl mb-8 no-print max-w-md mx-auto shadow-inner">
-            <button id="tab-input-btn" onclick="Tab('input')" class="flex-1 py-2.5 text-center text-sm font-bold rounded-lg text-white hover:text-emerald-600 bg-emerald-600 shadow-md transition-all duration-200">
+            <button id="tab-input-btn" onclick="switchTab('input')" class="flex-1 py-2.5 text-center text-sm font-bold rounded-lg text-emerald-700 bg-white shadow-sm transition-all">
                 1. Nhập thông số
             </button>
-            <button id="tab-output-btn" onclick="Tab('output')" class="flex-1 py-3 text-center text-sm font-medium rounded-lg text-gray-500 hover:text-blue-600 transition-all">
+            <button id="tab-output-btn" onclick="switchTab('output')" class="flex-1 py-3 text-center text-sm font-medium text-gray-500 hover:text-emerald-600 transition-all">
                 2. Xuất phiếu thu
             </button>
         </div>
@@ -233,7 +233,7 @@
         <div id="tab-output" class="space-y-6 hidden">
             <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4 no-print">
                 <div class="flex items-center gap-3 w-full sm:w-auto">
-                    <span class="font-semibold text-gray-700 whitespace-nowrap">Lựa chọn xuất:</span>
+                    <span class="font-semibold text-gray-700 whitespace-nowrap">Chọn phòng xuất phiếu:</span>
                     <select id="select-room-view" onchange="renderInvoices()" class="p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 bg-white w-full sm:w-64">
                         <option value="all">Xuất tất cả 2 dãy</option>
                         <option value="day45">Xuất Dãy 45</option>
@@ -247,7 +247,7 @@
                         In tất cả (PDF)
                     </button>
                     <button type="button" onclick="downloadAllImages()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition flex items-center justify-center gap-2">
-                        Lưu tất cả (JPEG)
+                        Lưu hình ảnh (PNG)
                     </button>
                 </div>
             </div>
@@ -351,32 +351,27 @@
         }
 
         // --- ĐIỀU HƯỚNG TAB ---
-                 function switchTab(tabId) {
-    // 1. Ẩn toàn bộ nội dung các tab
-    document.getElementById('tab-input').classList.add('hidden');
-    document.getElementById('tab-output').classList.add('hidden');
-    
-    const inputBtn = document.getElementById('tab-input-btn');
-    const outputBtn = document.getElementById('tab-output-btn');
+        function switchTab(tabId) {
+            document.getElementById('tab-input').classList.add('hidden');
+            document.getElementById('tab-output').classList.add('hidden');
+            
+            const inputBtn = document.getElementById('tab-input-btn');
+            const outputBtn = document.getElementById('tab-output-btn');
+            
+            // Khôi phục định dạng cơ bản của nút chưa được chọn
+            inputBtn.className = "flex-1 py-2.5 text-center text-sm font-semibold text-gray-500 rounded-lg hover:text-emerald-600 hover:bg-slate-200/50 transition-all duration-200";
+            outputBtn.className = "flex-1 py-2.5 text-center text-sm font-semibold text-gray-500 rounded-lg hover:text-emerald-600 hover:bg-slate-200/50 transition-all duration-200";
 
-    // Khai báo các class đại diện cho trạng thái kích hoạt (Active) của từng nút
-    const inputActive = ['bg-emerald-600', 'text-white', 'shadow-md', 'font-bold'];
-    const outputActive = ['bg-blue-600', 'text-white', 'shadow-md', 'font-bold'];
+            if (tabId === 'input') {
+                document.getElementById('tab-input').classList.remove('hidden');
+                inputBtn.className = "flex-1 py-2.5 text-center text-sm font-bold rounded-lg text-white bg-emerald-600 shadow-md transition-all duration-200";
+            } else {
+                document.getElementById('tab-output').classList.remove('hidden');
+                outputBtn.className = "flex-1 py-2.5 text-center text-sm font-bold rounded-lg text-white bg-emerald-600 shadow-md transition-all duration-200";
+                renderInvoices();
+            }
+        }
 
-    // 2. Xóa bỏ trạng thái kích hoạt cũ của cả hai nút
-    inputBtn.classList.remove(...inputActive);
-    outputBtn.classList.remove(...outputActive);
-
-    // 3. Kích hoạt đúng tab được chọn
-    if (tabId === 'input') {
-        document.getElementById('tab-input').classList.remove('hidden');
-        inputBtn.classList.add(...inputActive);
-    } else {
-        document.getElementById('tab-output').classList.remove('hidden');
-        outputBtn.classList.add(...outputActive);
-        renderInvoices();
-    }
-}
         // --- LƯU TRẠNG THÁI TABLE TỪ INPUT ---
         function saveCurrentTableData() {
             // Lưu dữ liệu Dãy 45
@@ -774,7 +769,7 @@
                 let tempHtml = '';
                 if (isShared) {
                     tempHtml = `
-                        <div class="receipt-font bg-white text-black p-6 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
+                        <div class="receipt-font bg-white text-black p-8 border border-gray-300 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
                             <div>
                                 <div class="text-center border-b border-gray-200 pb-2 mb-4">
                                     <div class="font-bold text-base leading-tight uppercase">Bảng chia điện nước - ${dayData.address}</div>
@@ -782,7 +777,7 @@
                                 </div>
                                 <div class="text-[11px] text-gray-800 leading-relaxed space-y-4">
                                     <div>
-                                        <div class="font-bold mb-2 underline uppercase text-emerald-800">${dayData.address} - Điện tháng ${invoiceMonth}:</div>
+                                        <div class="font-bold mb-1 underline uppercase text-emerald-800">${dayData.address} - Điện tháng ${invoiceMonth}:</div>
                                         <div class="space-y-0.5 font-mono">
                                             ${dayData.roomsCalc.map(rc => `
                                                 <div class="flex justify-between">
@@ -790,14 +785,14 @@
                                                     <span>= ${rc.eCost} k</span>
                                                 </div>
                                             `).join('')}
-                                            <div class="border-t border-gray-300 pt-4 mt-8 flex justify-between font-bold">
-                                                <span>Tổng dùng: ${dayData.totalElectricConsumption} kWh [${dayData.totalElectricBill} k / ${dayData.totalElectricConsumption} = ${parseFloat(dayData.electricPricePerKwh.toFixed(2))} k]</span>
+                                            <div class="border-t border-gray-300 pt-1 mt-1 flex justify-between font-bold">
+                                                <span>Tổng dùng: ${dayData.totalElectricConsumption} kWh [${dayData.totalElectricBill} k / ${dayData.totalElectricConsumption} = ${parseFloat(dayData.electricPricePerKwh.toFixed(2))}]</span>
                                                 <span>Tổng: ${dayData.roomsCalc.reduce((s, rc) => s + rc.eCost, 0)} k</span>
                                             </div>
                                         </div>
                                     </div>
                                     <div>
-                                        <div class="font-bold mb-2 underline uppercase text-blue-800">${dayData.address} - Nước tháng ${invoiceMonth}:</div>
+                                        <div class="font-bold mb-1 underline uppercase text-blue-800">${dayData.address} - Nước tháng ${invoiceMonth}:</div>
                                         <div class="space-y-0.5 font-mono">
                                             ${dayData.roomsCalc.map(rc => `
                                                 <div class="flex justify-between">
@@ -805,7 +800,7 @@
                                                     <span>= ${rc.wCost} k</span>
                                                 </div>
                                             `).join('')}
-                                            <div class="border-t border-gray-300 pt-4 mt-8 flex justify-between font-bold">
+                                            <div class="border-t border-gray-300 pt-1 mt-1 flex justify-between font-bold">
                                                 <span>Tổng dùng: ${dayData.totalWaterConsumption} khối</span>
                                                 <span>Tổng: ${dayData.roomsCalc.reduce((s, rc) => s + rc.wCost, 0)} k</span>
                                             </div>
@@ -817,7 +812,7 @@
                     `;
                 } else {
                     tempHtml = `
-                        <div class="receipt-font bg-white text-black p-6 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
+                        <div class="receipt-font bg-white text-black p-8 border border-gray-300 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
                             <div>
                                 <div class="flex justify-between items-start border-b border-gray-200 pb-2 mb-4">
                                     <div class="font-bold text-base leading-tight">${r.name || r.id} tháng ${invoiceMonth}/${invoiceYear}</div>
@@ -878,7 +873,7 @@
                                         </div>
                                     `).join('')}
                                     <div class="border-t border-gray-300 pt-1 mt-1 flex justify-between font-bold">
-                                        <span>Tổng dùng: ${dayData.totalElectricConsumption} kWh [${dayData.totalElectricBill} k / ${dayData.totalElectricConsumption} = ${parseFloat(dayData.electricPricePerKwh.toFixed(2))} k]</span>
+                                        <span>Tổng dùng: ${dayData.totalElectricConsumption} kWh [${dayData.totalElectricBill} k / ${dayData.totalElectricConsumption} = ${parseFloat(dayData.electricPricePerKwh.toFixed(2))}]</span>
                                         <span>Tổng:  ${dayData.roomsCalc.reduce((s, rc) => s + rc.eCost, 0)} k</span>
                                     </div>
                                 </div>
