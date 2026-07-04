@@ -370,7 +370,11 @@
 
     // Gọi hàm render nếu chuyển sang tab output
     if (!isInput) {
-        renderInvoices();
+        requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            renderInvoices();
+        });
+    });
     }
 }
 
