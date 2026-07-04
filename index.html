@@ -873,7 +873,7 @@
                                         </div>
                                     `).join('')}
                                     <div class="border-t border-gray-300 pt-1 mt-1 flex justify-between font-bold">
-                                        <span>Tổng dùng: ${dayData.totalElectricConsumption} kWh [${dayData.totalElectricBill} k / ${dayData.totalElectricConsumption} = ${parseFloat(dayData.electricPricePerKwh.toFixed(2))}]</span>
+                                        <span>Tổng dùng: ${dayData.totalElectricConsumption} kWh [${dayData.totalElectricBill} k / ${dayData.totalElectricConsumption} = ${parseFloat(dayData.electricPricePerKwh.toFixed(2))} k]</span>
                                         <span>Tổng:  ${dayData.roomsCalc.reduce((s, rc) => s + rc.eCost, 0)} k</span>
                                     </div>
                                 </div>
