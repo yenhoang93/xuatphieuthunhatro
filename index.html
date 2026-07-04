@@ -769,7 +769,7 @@
                 let tempHtml = '';
                 if (isShared) {
                     tempHtml = `
-                        <div class="receipt-font bg-white text-black p-8 border border-gray-300 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
+                        <div class="receipt-font bg-white text-black p-8 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
                             <div>
                                 <div class="text-center border-b border-gray-200 pb-2 mb-4">
                                     <div class="font-bold text-base leading-tight uppercase">Bảng chia điện nước - ${dayData.address}</div>
@@ -777,7 +777,7 @@
                                 </div>
                                 <div class="text-[11px] text-gray-800 leading-relaxed space-y-4">
                                     <div>
-                                        <div class="font-bold mb-1 underline uppercase text-emerald-800">${dayData.address} - Điện tháng ${invoiceMonth}:</div>
+                                        <div class="font-bold mb-2 underline uppercase text-emerald-800">${dayData.address} - Điện tháng ${invoiceMonth}:</div>
                                         <div class="space-y-0.5 font-mono">
                                             ${dayData.roomsCalc.map(rc => `
                                                 <div class="flex justify-between">
@@ -785,14 +785,14 @@
                                                     <span>= ${rc.eCost} k</span>
                                                 </div>
                                             `).join('')}
-                                            <div class="border-t border-gray-300 pt-1 mt-1 flex justify-between font-bold">
+                                            <div class="border-t border-gray-300 pt-2 mt-4 flex justify-between font-bold">
                                                 <span>Tổng dùng: ${dayData.totalElectricConsumption} kWh [${dayData.totalElectricBill} k / ${dayData.totalElectricConsumption} = ${parseFloat(dayData.electricPricePerKwh.toFixed(2))}]</span>
                                                 <span>Tổng: ${dayData.roomsCalc.reduce((s, rc) => s + rc.eCost, 0)} k</span>
                                             </div>
                                         </div>
                                     </div>
                                     <div>
-                                        <div class="font-bold mb-1 underline uppercase text-blue-800">${dayData.address} - Nước tháng ${invoiceMonth}:</div>
+                                        <div class="font-bold mb-2 underline uppercase text-blue-800">${dayData.address} - Nước tháng ${invoiceMonth}:</div>
                                         <div class="space-y-0.5 font-mono">
                                             ${dayData.roomsCalc.map(rc => `
                                                 <div class="flex justify-between">
@@ -800,7 +800,7 @@
                                                     <span>= ${rc.wCost} k</span>
                                                 </div>
                                             `).join('')}
-                                            <div class="border-t border-gray-300 pt-1 mt-1 flex justify-between font-bold">
+                                            <div class="border-t border-gray-300 pt-2 mt-4 flex justify-between font-bold">
                                                 <span>Tổng dùng: ${dayData.totalWaterConsumption} khối</span>
                                                 <span>Tổng: ${dayData.roomsCalc.reduce((s, rc) => s + rc.wCost, 0)} k</span>
                                             </div>
@@ -812,7 +812,7 @@
                     `;
                 } else {
                     tempHtml = `
-                        <div class="receipt-font bg-white text-black p-8 border border-gray-300 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
+                        <div class="receipt-font bg-white text-black p-8 w-[420px] shadow-sm text-sm relative flex flex-col justify-between">
                             <div>
                                 <div class="flex justify-between items-start border-b border-gray-200 pb-2 mb-4">
                                     <div class="font-bold text-base leading-tight">${r.name || r.id} tháng ${invoiceMonth}/${invoiceYear}</div>
