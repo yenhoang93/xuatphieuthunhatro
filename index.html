@@ -352,27 +352,20 @@
 
         // --- ĐIỀU HƯỚNG TAB ---
         function switchTab(tabId) {
-    const isInput = tabId === 'input';
-    
-    // Lấy các phần tử DOM
-    const tabInput = document.getElementById('tab-input');
-    const tabOutput = document.getElementById('tab-output');
-    const btnInput = document.getElementById('tab-input-btn');
-    const btnOutput = document.getElementById('tab-output-btn');
+            document.getElementById('tab-input').classList.add('hidden');
+            document.getElementById('tab-output').classList.add('hidden');
+            document.getElementById('tab-input-btn').classList.remove('tab-active');
+            document.getElementById('tab-output-btn').classList.remove('tab-active');
 
-    // Điều khiển ẩn/hiện nội dung dựa trên biến boolean
-    tabInput.classList.toggle('hidden', !isInput);
-    tabOutput.classList.toggle('hidden', isInput);
-
-    // Điều khiển trạng thái nút bấm
-    btnInput.classList.toggle('tab-active', isInput);
-    btnOutput.classList.toggle('tab-active', !isInput);
-
-    // Gọi hàm render nếu chuyển sang tab output
-    if (!isInput) {
-        renderInvoices();
-       }
-}
+            if (tabId === 'input') {
+                document.getElementById('tab-input').classList.remove('hidden');
+                document.getElementById('tab-input-btn').classList.add('tab-active');
+            } else {
+                document.getElementById('tab-output').classList.remove('hidden');
+                document.getElementById('tab-output-btn').classList.add('tab-active');
+                renderInvoices();
+            }
+        }
 
         // --- LƯU TRẠNG THÁI TABLE TỪ INPUT ---
         function saveCurrentTableData() {
