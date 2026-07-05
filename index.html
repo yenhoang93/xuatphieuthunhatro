@@ -18,7 +18,7 @@
 
         /* Định dạng phong cách viết tay/máy in đơn giản cho hóa đơn giống ảnh mẫu */
         .receipt-font {
-            font-family: 'Courier Prime', 'Courier New', monospace;
+            font-family: 'Courier Prime', 'Courier New', monospace !important;
         }
 
         .tab-active {
@@ -737,6 +737,11 @@
                 rentYear += 1;
             }
 
+			// Đợi toàn bộ Fonts được nạp và dựng sẵn để tránh lệch font, lệch hàng ở thẻ đầu tiên khi chuyển tab lần đầu
+            await document.fonts.ready;
+            // Tạo độ trễ ngắn cho trình duyệt tính toán ổn định kích thước layout offscreen
+            await new Promise(resolve => setTimeout(resolve, 150));
+			
             // Tạo từng thẻ chứa hiệu ứng tải trước khi chuyển nó thành ảnh tĩnh hoàn toàn
             for (let i = 0; i < listToRender.length; i++) {
                 let item = listToRender[i];
@@ -892,6 +897,9 @@
 
                 tempWrapper.innerHTML = tempHtml;
                 hiddenContainer.appendChild(tempWrapper);
+
+				// Cho phép trình duyệt dựng DOM trước khi html2canvas chụp
+                await new Promise(resolve => requestAnimationFrame(resolve));
 
 				// Chụp tự động offscreen và lưu đè base64 thành ảnh phẳng trực quan
                 await html2canvas(tempWrapper, {
