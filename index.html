@@ -896,9 +896,6 @@
                 tempWrapper.innerHTML = tempHtml;
                 hiddenContainer.appendChild(tempWrapper);
 
-				// Cho phép trình duyệt dựng DOM trước khi html2canvas chụp
-                await new Promise(resolve => requestAnimationFrame(resolve));
-
 				// Chụp tự động offscreen và lưu đè base64 thành ảnh phẳng trực quan
                 await html2canvas(tempWrapper, {
                     scale: 3,
