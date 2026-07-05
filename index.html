@@ -739,9 +739,7 @@
 
 			// Đợi toàn bộ Fonts được nạp và dựng sẵn để tránh lệch font, lệch hàng ở thẻ đầu tiên khi chuyển tab lần đầu
             await document.fonts.ready;
-            // Tạo độ trễ ngắn cho trình duyệt tính toán ổn định kích thước layout offscreen
-            await new Promise(resolve => setTimeout(resolve, 150));
-			
+		
             // Tạo từng thẻ chứa hiệu ứng tải trước khi chuyển nó thành ảnh tĩnh hoàn toàn
             for (let i = 0; i < listToRender.length; i++) {
                 let item = listToRender[i];
