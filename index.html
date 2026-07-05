@@ -780,7 +780,7 @@
                                 <div class="text-[11px] text-gray-800 leading-relaxed space-y-4">
                                     <div>
                                         <div class="font-bold mb-1 underline uppercase text-emerald-800">${dayData.address} - Điện tháng ${invoiceMonth}:</div>
-                                        <div class="space-y-0.5">
+                                        <div class="space-y-0.5 font-mono">
                                             ${dayData.roomsCalc.map(rc => `
                                                 <div class="flex justify-between">
                                                     <span>${rc.id}: ${rc.eNew} - ${rc.eOld} = ${rc.eUsed} x ${parseFloat(dayData.electricPricePerKwh.toFixed(2))}k</span>
@@ -795,7 +795,7 @@
                                     </div>
                                     <div>
                                         <div class="font-bold mb-1 underline uppercase text-blue-800">${dayData.address} - Nước tháng ${invoiceMonth}:</div>
-                                        <div class="space-y-0.5">
+                                        <div class="space-y-0.5 font-mono">
                                             ${dayData.roomsCalc.map(rc => `
                                                 <div class="flex justify-between">
                                                     <span>${rc.id}: ${rc.wNew} - ${rc.wOld} = ${rc.wUsed} x ${dayData.waterPrice}k</span>
