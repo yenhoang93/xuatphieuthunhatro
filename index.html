@@ -900,10 +900,7 @@
                 tempWrapper.innerHTML = tempHtml;
                 hiddenContainer.appendChild(tempWrapper);
 
-				// BẮT BUỘC: Chờ trình duyệt xử lý xong layout của CSS Grid trước khi chụp
-				await new Promise(resolve => setTimeout(resolve, 600));
-
-                // Chụp tự động offscreen và lưu đè base64 thành ảnh phẳng trực quan
+				// Chụp tự động offscreen và lưu đè base64 thành ảnh phẳng trực quan
                 await html2canvas(tempWrapper, {
                     scale: 3,
                     useCORS: true,
