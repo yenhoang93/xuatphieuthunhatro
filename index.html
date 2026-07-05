@@ -132,14 +132,14 @@
                         <thead class="bg-blue-600 text-white">
                             <tr>
                                 <th class="px-3 py-3 text-left font-semibold uppercase tracking-wider w-24">Số Phòng</th>
-                                <th class="px-3 py-3 text-left font-semibold uppercase tracking-wider">Tên Người   Thuê</th>
-                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-36">Tiền   Phòng</th>
-                                <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">  Điện Mới</th>
-                                <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">  Điện Cũ</th>
-                                <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">  Nước Mới</th>
-                                <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">  Nước Cũ</th>
-                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">  Tạm Trú</th>
-                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">  Khác</th>
+                                <th class="px-3 py-3 text-left font-semibold uppercase tracking-wider">Tên Người__ Thuê</th>
+                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-36">Tiền __Phòng</th>
+                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">__Điện Mới</th>
+                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">__Điện Cũ</th>
+                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">__Nước Mới</th>
+                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">__Nước Cũ</th>
+                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">__Tạm Trú</th>
+                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">__Khác</th>
                                 <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-16">Xóa</th>
                             </tr>
                         </thead>
@@ -203,14 +203,14 @@
                         <thead class="bg-emerald-600 text-white">
                             <tr>
                                 <th class="px-3 py-3 text-left font-semibold uppercase tracking-wider w-24">Số Phòng</th>
-                                <th class="px-3 py-3 text-left font-semibold uppercase tracking-wider">Tên Người   Thuê</th>
-                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-36">Tiền   Phòng</th>
-                                <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">  Điện Mới</th>
-                                <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">  Điện Cũ</th>
-                                <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">  Nước Mới</th>
-                                <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-28">  Nước Cũ</th>
-                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">  Tạm Trú</th>
-                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">  Khác</th>
+                                <th class="px-3 py-3 text-left font-semibold uppercase tracking-wider">Tên Người__ Thuê</th>
+                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-36">Tiền __Phòng</th>
+                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">__Điện Mới</th>
+                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">__Điện Cũ</th>
+                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">__Nước Mới</th>
+                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">__Nước Cũ</th>
+                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">__Tạm Trú</th>
+                                <th class="px-3 py-3 text-right font-semibold uppercase tracking-wider w-28">__Khác</th>
                                 <th class="px-3 py-3 text-center font-semibold uppercase tracking-wider w-16">Xóa</th>
                             </tr>
                         </thead>
@@ -233,9 +233,9 @@
         <div id="tab-output" class="space-y-6 hidden">
             <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4 no-print">
                 <div class="flex items-center gap-3 w-full sm:w-auto">
-                    <span class="font-semibold text-gray-700 whitespace-nowrap">Chọn phòng xuất phiếu:</span>
+                    <span class="font-semibold text-gray-700 whitespace-nowrap">Lựa chọn xuất:</span>
                     <select id="select-room-view" onchange="renderInvoices()" class="p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 bg-white w-full sm:w-64">
-                        <option value="all">Xuất tất cả 2 dãy</option>
+                        <option value="all">Xuất cả 2 Dãy</option>
                         <option value="day45">Xuất Dãy 45</option>
                         <option value="day47">Xuất Dãy 47</option>
                         <option value="dn45">Điện nước Dãy 45</option>
@@ -247,7 +247,7 @@
                         In tất cả (PDF)
                     </button>
                     <button type="button" onclick="downloadAllImages()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition flex items-center justify-center gap-2">
-                        Lưu hình ảnh (jpeg)
+                        Lưu tất cả (JPEG)
                     </button>
                 </div>
             </div>
@@ -370,12 +370,8 @@
 
     // Gọi hàm render nếu chuyển sang tab output
     if (!isInput) {
-        requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            renderInvoices();
-        });
-    });
-    }
+        renderInvoices();
+       }
 }
 
         // --- LƯU TRẠNG THÁI TABLE TỪ INPUT ---
@@ -535,7 +531,7 @@
         function updateRoomDropdownOptions() {
             let select = document.getElementById('select-room-view');
             select.innerHTML = `
-                <option value="all">Xuất tất cả 2 dãy</option>
+                <option value="all">Xuất cả 2 Dãy</option>
                 <option value="day45">Xuất Dãy 45</option>
                 <option value="day47">Xuất Dãy 47</option>
                 <option value="dn45">Điện nước Dãy 45</option>
@@ -784,7 +780,7 @@
                                 <div class="text-[11px] text-gray-800 leading-relaxed space-y-4">
                                     <div>
                                         <div class="font-bold mb-1 underline uppercase text-emerald-800">${dayData.address} - Điện tháng ${invoiceMonth}:</div>
-                                        <div class="space-y-0.5 font-mono">
+                                        <div class="space-y-0.5">
                                             ${dayData.roomsCalc.map(rc => `
                                                 <div class="flex justify-between">
                                                     <span>${rc.id}: ${rc.eNew} - ${rc.eOld} = ${rc.eUsed} x ${parseFloat(dayData.electricPricePerKwh.toFixed(2))}k</span>
@@ -792,14 +788,14 @@
                                                 </div>
                                             `).join('')}
                                             <div class="border-t border-gray-300 pt-1 mt-1 flex justify-between font-bold">
-                                                <span>Tổng dùng: ${dayData.totalElectricConsumption} kWh [${dayData.totalElectricBill} k / ${dayData.totalElectricConsumption} = ${parseFloat(dayData.electricPricePerKwh.toFixed(2))}]</span>
+                                                <span>Tổng dùng: ${dayData.totalElectricConsumption} kWh [${dayData.totalElectricBill} k / ${dayData.totalElectricConsumption} = ${parseFloat(dayData.electricPricePerKwh.toFixed(2))} k]</span>
                                                 <span>Tổng: ${dayData.roomsCalc.reduce((s, rc) => s + rc.eCost, 0)} k</span>
                                             </div>
                                         </div>
                                     </div>
                                     <div>
                                         <div class="font-bold mb-1 underline uppercase text-blue-800">${dayData.address} - Nước tháng ${invoiceMonth}:</div>
-                                        <div class="space-y-0.5 font-mono">
+                                        <div class="space-y-0.5">
                                             ${dayData.roomsCalc.map(rc => `
                                                 <div class="flex justify-between">
                                                     <span>${rc.id}: ${rc.wNew} - ${rc.wOld} = ${rc.wUsed} x ${dayData.waterPrice}k</span>
