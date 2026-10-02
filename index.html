@@ -606,12 +606,26 @@
 
         // --- TÍNH TOÁN TOÀN BỘ SỐ LIỆU ---
         let globalCalcData = {};
-
+			// 1. Tính toán Tháng/Năm mặc định (Tháng hiện tại - 1)
+			const prevDate = new Date();
+			prevDate.setMonth(prevDate.getMonth() - 1);
+			
+			const defaultMonth = prevDate.getMonth() + 1; // getMonth() trả về 0-11 nên +1
+			const defaultYear = prevDate.getFullYear();
+			
+			// 2. Tự động điền giá trị mặc định vào ô input khi vừa load trang
+			document.addEventListener('DOMContentLoaded', () => {
+			    const monthEl = document.getElementById('month');
+			    const yearEl = document.getElementById('year');
+			
+			    if (monthEl && !monthEl.value) monthEl.value = defaultMonth;
+			    if (yearEl && !yearEl.value) yearEl.value = defaultYear;
+			});
         function calculateAll() {
             saveCurrentTableData();
 
-            let month = parseInt(document.getElementById('month').value, 10) || 6;
-            let year = parseInt(document.getElementById('year').value, 10) || 2026;
+            let month = parseInt(document.getElementById('month').value, 10) || defaultMonth;
+            let year = parseInt(document.getElementById('year').value, 10) || defaultYear;
 
             // Tính toán cho Dãy 45
             let totalElectricBill45 = parseFormattedNumber(document.getElementById('total-electric-bill-45').value);
