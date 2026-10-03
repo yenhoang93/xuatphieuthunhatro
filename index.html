@@ -45,6 +45,10 @@
             <button id="tab-output-btn" onclick="switchTab('output')" class="flex-1 py-3 text-center font-medium text-gray-500 border-b-2 border-transparent hover:text-blue-600 transition-all">
                 2. Xuất phiếu thu
             </button>
+			<!-- [THÊM MỚI - TAB 3] Nút điều hướng tab "3. Xem Dữ liệu" -->
+            <button id="tab-data-btn" onclick="switchTab('data')" class="flex-1 py-3 text-center font-medium text-gray-500 border-b-2 border-transparent hover:text-purple-600 transition-all">
+                3. Xem Dữ liệu
+            </button>
         </div>
 
         <!-- Khung hiển thị thông báo -->
@@ -262,6 +266,34 @@
                 <!-- Hóa đơn sẽ render vào đây -->
             </div>
         </div>
+		<!-- ===== [THÊM MỚI - TAB 3] BẮT ĐẦU: Giao diện tab "3. Dữ liệu" ===== -->
+        <div id="tab-data" class="space-y-6 hidden">
+            <!-- Bộ lọc Năm / Tháng -->
+            <div class="bg-purple-50 p-4 rounded-xl border border-purple-200 grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+                <div class="font-bold text-purple-800 sm:col-span-1">Xem lại dữ liệu đã lưu:</div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Năm tính điện nước</label>
+                    <input type="number" id="data-year" min="2000" max="2100" onchange="loadSavedData()" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Tháng tính điện nước</label>
+                    <input type="number" id="data-month" min="1" max="12" onchange="loadSavedData()" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <button type="button" id="btn-load-data" onclick="loadSavedData()" class="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow transition disabled:opacity-60 disabled:cursor-not-allowed">
+                    Xem dữ liệu
+                </button>
+            </div>
+
+            <!-- Chọn lần lưu (chỉ hiện khi tháng đó được lưu nhiều lần) -->
+            <div id="data-batch-picker" class="hidden bg-gray-50 p-3 rounded-xl border border-gray-200 flex flex-col sm:flex-row sm:items-center gap-3">
+                <span class="text-sm font-semibold text-gray-700 whitespace-nowrap">Tháng này đã lưu nhiều lần, chọn lần lưu:</span>
+                <select id="data-batch-select" onchange="dvRenderBatch(parseInt(this.value, 10))" class="p-2 border border-gray-300 rounded-lg bg-white w-full sm:w-72"></select>
+            </div>
+
+            <!-- Kết quả -->
+            <div id="data-view-result" class="space-y-8"></div>
+        </div>
+        <!-- ===== [THÊM MỚI - TAB 3] KẾT THÚC: Giao diện tab "3. Dữ liệu" ===== -->
     </div>
 
     <script>
@@ -361,14 +393,20 @@
             document.getElementById('tab-output').classList.add('hidden');
             document.getElementById('tab-input-btn').classList.remove('tab-active');
             document.getElementById('tab-output-btn').classList.remove('tab-active');
-
+			// [THÊM MỚI - TAB 3] Ẩn tab dữ liệu + bỏ trạng thái active của nút tab 3
+            document.getElementById('tab-data').classList.add('hidden');
+            document.getElementById('tab-data-btn').classList.remove('tab-active');
             if (tabId === 'input') {
                 document.getElementById('tab-input').classList.remove('hidden');
                 document.getElementById('tab-input-btn').classList.add('tab-active');
-            } else {
+            } else if (tabId === 'output') {   // [SỬA NHẸ] trước đây là "else {"
                 document.getElementById('tab-output').classList.remove('hidden');
                 document.getElementById('tab-output-btn').classList.add('tab-active');
                 renderInvoices();
+            } else if (tabId === 'data') {     // [THÊM MỚI - TAB 3] Mở tab "3. Dữ liệu"
+                document.getElementById('tab-data').classList.remove('hidden');
+                document.getElementById('tab-data-btn').classList.add('tab-active');
+                openDataTab();
             }
         }
 
@@ -1142,6 +1180,207 @@
 
         // =====================================================================
         // [THÊM MỚI] KẾT THÚC: CHỨC NĂNG LƯU DỮ LIỆU LÊN GOOGLE SHEETS
+        // =====================================================================
+
+// =====================================================================
+        // [THÊM MỚI - TAB 3] BẮT ĐẦU: XEM LẠI DỮ LIỆU ĐÃ LƯU TRÊN GOOGLE SHEETS
+        // (Toàn bộ code phía dưới là phần thêm mới, không đụng tới logic tính toán)
+        // =====================================================================
+
+        let dvReqId = 0;        // đánh số yêu cầu để bỏ qua kết quả cũ khi người dùng đổi tháng/năm liên tục
+        let dvBatches = [];     // các lần lưu của tháng đang xem: [{ ts, roomRows, dayRows }]
+        let dvQuery = { year: 0, month: 0 };
+        let dvInited = false;
+
+        // Chống chèn mã HTML từ dữ liệu (ví dụ tên người thuê)
+        function dvEsc(s) {
+            return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, c =>
+                ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        // Số có dấu chấm ngăn cách hàng nghìn, dấu phẩy cho phần thập phân (VD: 2.100 | 3,45)
+        function dvNum(v) {
+            const n = Number(v);
+            if (v === '' || v === null || v === undefined || isNaN(n)) return '';
+            let parts = Math.abs(n).toFixed(2).split('.');
+            let intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            let dec = parts[1].replace(/0+$/, '');
+            return (n < 0 ? '-' : '') + intPart + (dec ? ',' + dec : '');
+        }
+
+        // Tiền: số + chữ "K" nhỏ, màu xám phía sau
+        function dvMoney(v) {
+            const t = dvNum(v);
+            if (t === '') return '';
+            return `${t}<span class="text-gray-400 text-xs font-bold ml-0.5">K</span>`;
+        }
+
+        // Định nghĩa cột (idx = vị trí cột trong sheet)
+        const DV_SUMMARY_COLS = [
+            { label: 'Tổng số khối điện',  idx: 3, type: 'num' },
+            { label: 'Giá khối điện',      idx: 4, type: 'money' },
+            { label: 'Tổng tiền điện dãy', idx: 5, type: 'money' },
+            { label: 'Tổng số khối nước',  idx: 6, type: 'num' },
+            { label: 'Giá khối nước',      idx: 7, type: 'money' },
+            { label: 'Tổng tiền nước dãy', idx: 8, type: 'money' },
+        //    { label: 'Thời gian nhập',     idx: 9, type: 'text' }
+        ];
+        const DV_ROOM_COLS = [
+            { label: 'Phòng',         idx: 3,  type: 'text', cls: 'font-bold text-gray-700' },
+            { label: 'Tên',           idx: 4,  type: 'text' },
+            { label: 'Tổng cộng',     idx: 19, type: 'money', cls: 'font-extrabold text-gray-900' }, 
+            { label: 'Tiền phòng',    idx: 13, type: 'money' },
+            { label: 'Tiền điện',     idx: 14, type: 'money' },
+            { label: 'Tiền nước',     idx: 15, type: 'money' },
+            { label: 'Tiền rác',      idx: 16, type: 'money' },
+            { label: 'Tiền tạm trú',  idx: 17, type: 'money' },
+            { label: 'Khác',          idx: 18, type: 'money' },
+			{ label: 'Điện mới',      idx: 5,  type: 'num' },
+            { label: 'Điện cũ',       idx: 6,  type: 'num' },
+            { label: 'Số điện',       idx: 7,  type: 'num' },
+            { label: 'Giá khối điện', idx: 8,  type: 'money' },
+            { label: 'Nước mới',      idx: 9,  type: 'num' },
+            { label: 'Nước cũ',       idx: 10, type: 'num' },
+            { label: 'Số nước',       idx: 11, type: 'num' },
+        //    { label: 'Giá khối nước', idx: 12, type: 'money' }
+        ];
+
+        // Dựng bảng HTML (cuộn ngang trên màn hình nhỏ)
+        function dvBuildTable(cols, rows, headClass) {
+            const thead = cols.map(c =>
+                `<th class="px-3 py-3 ${c.type === 'text' ? 'text-left' : 'text-right'} font-semibold uppercase tracking-wider text-xs whitespace-nowrap">${c.label}</th>`
+            ).join('');
+            const tbody = rows.map(r => '<tr class="hover:bg-gray-50">' + cols.map(c => {
+                const v = r[c.idx];
+                const content = c.type === 'money' ? dvMoney(v) : (c.type === 'num' ? dvNum(v) : dvEsc(v));
+                return `<td class="px-3 py-2 whitespace-nowrap border-r border-gray-200 ${c.type === 'text' ? 'text-left' : 'text-right'} ${c.cls || ''}">${content}</td>`;
+            }).join('') + '</tr>').join('');
+            return `
+                <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-md">
+                    <table class="min-w-full divide-y divide-gray-200 text-sm">
+                        <thead class="${headClass} text-white"><tr>${thead}</tr></thead>
+                        <tbody class="bg-white divide-y divide-gray-200">${tbody}</tbody>
+                    </table>
+                </div>`;
+        }
+
+        // Mở tab: điền sẵn tháng/năm lần đầu rồi tự động tải
+        function openDataTab() {
+            if (!dvInited) {
+                dvInited = true;
+                document.getElementById('data-year').value = globalCalcData.year || defaultYear;
+                document.getElementById('data-month').value = globalCalcData.month || defaultMonth;
+            }
+            loadSavedData();
+        }
+
+        function dvShowMessage(html) {
+            document.getElementById('data-view-result').innerHTML = html;
+        }
+
+        // Gửi yêu cầu GET lấy dữ liệu theo tháng/năm từ Google Sheets
+        async function loadSavedData() {
+            const year = parseInt(document.getElementById('data-year').value, 10);
+            const month = parseInt(document.getElementById('data-month').value, 10);
+            const picker = document.getElementById('data-batch-picker');
+            picker.classList.add('hidden');
+
+            if (isNaN(year) || year < 2000 || year > 2100 || isNaN(month) || month < 1 || month > 12) {
+                dvShowMessage(`<div class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm font-semibold">Vui lòng nhập Năm (2000-2100) và Tháng (1-12) hợp lệ.</div>`);
+                return;
+            }
+            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.indexOf("script.google.com") === -1) {
+                dvShowMessage(`<div class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm font-semibold">Chưa cấu hình URL Web App (biến GAS_WEB_APP_URL).</div>`);
+                return;
+            }
+
+            const reqId = ++dvReqId;
+            dvQuery = { year, month };
+            const btn = document.getElementById('btn-load-data');
+            btn.disabled = true;
+            dvShowMessage(`
+                <div class="flex flex-col items-center justify-center py-12">
+                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-700"></div>
+                    <p class="text-sm text-gray-500 mt-3 font-semibold">Đang tải dữ liệu tháng ${month}/${year}...</p>
+                </div>`);
+
+            try {
+                const url = `${GAS_WEB_APP_URL}?action=get&year=${year}&month=${month}`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("HTTP " + response.status);
+                const result = await response.json();
+                if (reqId !== dvReqId) return; // đã có yêu cầu mới hơn, bỏ qua kết quả này
+                if (!result || result.status !== "success") {
+                    throw new Error((result && result.message) || "Google Sheets phản hồi lỗi.");
+                }
+
+                // Gom theo "Thời gian nhập" (mỗi lần bấm lưu = 1 nhóm) để không bị lẫn khi lưu trùng tháng
+                const map = new Map();
+                const getBatch = ts => {
+                    if (!map.has(ts)) map.set(ts, { ts, roomRows: [], dayRows: [] });
+                    return map.get(ts);
+                };
+                (result.roomRows || []).forEach(r => getBatch(String(r[20])).roomRows.push(r));
+                (result.dayRows || []).forEach(r => getBatch(String(r[9])).dayRows.push(r));
+                dvBatches = Array.from(map.values());
+
+                if (dvBatches.length === 0) {
+                    dvShowMessage(`<div class="p-6 rounded-xl bg-gray-50 border border-gray-200 text-center text-gray-600 font-semibold">Không có dữ liệu cho tháng ${month}/${year} này.</div>`);
+                    return;
+                }
+
+                // Nhiều lần lưu: cho chọn, mặc định lần mới nhất (cuối cùng)
+                const select = document.getElementById('data-batch-select');
+                select.innerHTML = dvBatches.map((b, i) =>
+                    `<option value="${i}">${dvEsc(b.ts)}${i === dvBatches.length - 1 ? ' (mới nhất)' : ''}</option>`
+                ).join('');
+                select.value = String(dvBatches.length - 1);
+                if (dvBatches.length > 1) picker.classList.remove('hidden');
+
+                dvRenderBatch(dvBatches.length - 1);
+            } catch (err) {
+                if (reqId !== dvReqId) return;
+                console.error("Lỗi tải dữ liệu Google Sheets:", err);
+                dvShowMessage(`<div class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm font-semibold">Tải dữ liệu thất bại: ${dvEsc(err.message)}</div>`);
+            } finally {
+                if (reqId === dvReqId) btn.disabled = false;
+            }
+        }
+
+        // Hiển thị 4 bảng theo thứ tự: Tổng hợp 45 → Chi tiết 45 → Tổng hợp 47 → Chi tiết 47
+        function dvRenderBatch(index) {
+            const b = dvBatches[index];
+            if (!b) return;
+            const themes = {
+                'Dãy 45': { head: 'bg-blue-600',    title: 'text-blue-700' },
+                'Dãy 47': { head: 'bg-emerald-600', title: 'text-emerald-700' }
+            };
+            const emptyNote = text => `<p class="text-sm text-gray-500 italic">${text}</p>`;
+
+            let html = `<div class="text-xs text-gray-500">Dữ liệu tháng <b>${dvQuery.month}/${dvQuery.year}</b> · lưu lúc <b>${dvEsc(b.ts)}</b></div>`;
+
+            ['Dãy 45', 'Dãy 47'].forEach(day => {
+                const t = themes[day];
+                const dayRows = b.dayRows.filter(r => String(r[2]).trim() === day);
+                const roomRows = b.roomRows.filter(r => String(r[2]).trim() === day);
+                html += `
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-6">
+                        <div>
+                            <h3 class="text-lg font-bold ${t.title} uppercase mb-3">Tổng hợp ${day}</h3>
+                            ${dayRows.length ? dvBuildTable(DV_SUMMARY_COLS, dayRows, t.head) : emptyNote('Không có dữ liệu tổng hợp cho ' + day + '.')}
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold ${t.title} uppercase mb-3">Chi tiết từng phòng - ${day}</h3>
+                            ${roomRows.length ? dvBuildTable(DV_ROOM_COLS, roomRows, t.head) : emptyNote('Không có dữ liệu phòng cho ' + day + '.')}
+                        </div>
+                    </div>`;
+            });
+
+            dvShowMessage(html);
+        }
+
+        // =====================================================================
+        // [THÊM MỚI - TAB 3] KẾT THÚC
         // =====================================================================
 		
         // --- KHỞI CHẠY ---
