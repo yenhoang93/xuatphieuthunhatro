@@ -1006,7 +1006,139 @@
         function closeIosModal() {
             document.getElementById('ios-image-modal').classList.add('hidden');
         }
+		// =====================================================================
+        // [THÊM MỚI] BẮT ĐẦU: CHỨC NĂNG LƯU DỮ LIỆU LÊN GOOGLE SHEETS
+        // =====================================================================
 
+        // >>> DÁN URL WEB APP (Google Apps Script) CỦA BẠN VÀO ĐÂY <<<
+        // Dạng: https://script.google.com/macros/s/XXXXXXXXXXXX/exec
+        const GAS_WEB_APP_URL = "https://script.google.com/u/0/home/projects/1Ms8B9sjIFcNZR4j2rEycdhnHeJ5S7rMg9fbFfTwVYF-gYbERvi7Y7wmv/edit";
+
+        // Toast riêng cho tính năng này: giữ nguyên khi đang lưu, tự ẩn khi có kết quả
+        let gsToastTimer = null;
+        function showGsToast(text, type = 'info', autoHideMs = 0) {
+            const toast = document.getElementById('toast-message');
+            if (gsToastTimer) { clearTimeout(gsToastTimer); gsToastTimer = null; }
+            toast.textContent = text;
+            toast.className = `fixed top-5 right-5 z-50 p-4 rounded-xl shadow-lg border text-sm font-semibold transition-all duration-300`;
+            if (type === 'success') {
+                toast.classList.add('bg-green-50', 'text-green-800', 'border-green-200');
+            } else if (type === 'error') {
+                toast.classList.add('bg-red-50', 'text-red-800', 'border-red-200');
+            } else {
+                toast.classList.add('bg-purple-50', 'text-purple-800', 'border-purple-200');
+            }
+            toast.classList.remove('hidden');
+            if (autoHideMs > 0) {
+                gsToastTimer = setTimeout(() => toast.classList.add('hidden'), autoHideMs);
+            }
+        }
+
+        // Định dạng timestamp: dd/MM/yyyy HH:mm:ss
+        function gsTimestamp() {
+            const d = new Date();
+            const p = n => String(n).padStart(2, '0');
+            return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+        }
+
+        // Tổng hợp dữ liệu từ globalCalcData (đã tính sẵn) thành 2 phần gửi lên
+        function buildGoogleSheetPayload() {
+            calculateAll(); // đảm bảo globalCalcData là số liệu mới nhất trên giao diện
+            const ts = gsTimestamp();
+            const { month, year } = globalCalcData;
+            const roomRows = [];  // Sheet "Mỗi phòng"
+            const dayRows = [];   // Sheet "Mỗi dãy"
+
+            [globalCalcData.day45, globalCalcData.day47].forEach(day => {
+                // Phần 1: mỗi phòng 1 hàng (đúng thứ tự cột yêu cầu)
+                day.roomsCalc.forEach(r => {
+                    roomRows.push([
+                        year,                          // Năm
+                        month,                         // Tháng
+                        day.address,                   // Dãy
+                        r.id,                          // Phòng
+                        r.name,                        // Tên
+                        r.eNew,                        // Điện mới
+                        r.eOld,                        // Điện cũ
+                        r.eNew - r.eOld,               // Số điện (Mới - Cũ)
+                        day.electricPricePerKwh,       // Giá khối điện
+                        r.wNew,                        // Nước mới
+                        r.wOld,                        // Nước cũ
+                        r.wNew - r.wOld,               // Số nước (Mới - Cũ)
+                        day.waterPrice,                // Giá khối nước
+                        r.rent,                        // Tiền phòng
+                        r.eCost,                       // Tiền điện
+                        r.wCost,                       // Tiền nước
+                        day.trashFee,                  // Tiền rác
+                        r.temp,                        // Tiền tạm trú
+                        r.other,                       // Khác
+                        r.total,                       // Tổng cộng
+                        ts                             // Thời gian nhập
+                    ]);
+                });
+
+                // Phần 2: mỗi dãy 1 hàng
+                dayRows.push([
+                    year,                                                        // Năm
+                    month,                                                       // Tháng
+                    day.address,                                                 // Dãy
+                    day.totalElectricConsumption,                                // Tổng số khối điện
+                    day.electricPricePerKwh,                                     // Giá khối điện
+                    day.totalElectricBill,                                       // Tổng tiền điện dãy
+                    day.totalWaterConsumption,                                   // Tổng số khối nước
+                    day.waterPrice,                                              // Giá khối nước
+                    day.roomsCalc.reduce((sum, rc) => sum + rc.wCost, 0),        // Tổng tiền nước dãy
+                    ts                                                           // Thời gian nhập
+                ]);
+            });
+
+            return { roomRows, dayRows };
+        }
+
+        // Hàm chính: gửi dữ liệu lên Google Sheets (async/await + fetch)
+        async function saveDataToGoogleSheet() {
+            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.indexOf("script.google.com") === -1) {
+                showGsToast("Chưa cấu hình URL Web App! Hãy dán URL vào biến GAS_WEB_APP_URL trong code.", "error", 6000);
+                return;
+            }
+
+            const btn = document.getElementById('btn-save-gsheet');
+            const oldLabel = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = "Đang lưu...";
+            showGsToast("Đang lưu dữ liệu...", "info");
+
+            try {
+                const payload = buildGoogleSheetPayload();
+
+                // Dùng text/plain để là "simple request" (không bị chặn bởi CORS preflight)
+                const response = await fetch(GAS_WEB_APP_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error("HTTP " + response.status);
+
+                const result = await response.json();
+                if (result && result.status === "success") {
+                    showGsToast(`Lưu thành công! (${result.roomCount} phòng, ${result.dayCount} dãy)`, "success", 4000);
+                } else {
+                    throw new Error((result && result.message) || "Google Sheets phản hồi lỗi.");
+                }
+            } catch (err) {
+                console.error("Lỗi lưu Google Sheets:", err);
+                showGsToast("Lưu thất bại: " + err.message, "error", 6000);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = oldLabel;
+            }
+        }
+
+        // =====================================================================
+        // [THÊM MỚI] KẾT THÚC: CHỨC NĂNG LƯU DỮ LIỆU LÊN GOOGLE SHEETS
+        // =====================================================================
+		
         // --- KHỞI CHẠY ---
         window.onload = function() {
             renderInputTable();
