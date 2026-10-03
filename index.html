@@ -249,6 +249,11 @@
                     <button type="button" onclick="downloadAllImages()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition flex items-center justify-center gap-2">
                         Lưu tất cả (JPEG)
                     </button>
+					<!-- ===== [THÊM MỚI] BẮT ĐẦU: Nút Lưu dữ liệu lên Google Sheets ===== -->
+                    <button type="button" id="btn-save-gsheet" onclick="saveDataToGoogleSheet()" class="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                        Lưu dữ liệu (GG Sheet)
+                    </button>
+                    <!-- ===== [THÊM MỚI] KẾT THÚC: Nút Lưu dữ liệu lên Google Sheets ===== -->
                 </div>
             </div>
 
@@ -1012,7 +1017,7 @@
 
         // >>> DÁN URL WEB APP (Google Apps Script) CỦA BẠN VÀO ĐÂY <<<
         // Dạng: https://script.google.com/macros/s/XXXXXXXXXXXX/exec
-        const GAS_WEB_APP_URL = "https://script.google.com/u/0/home/projects/1Ms8B9sjIFcNZR4j2rEycdhnHeJ5S7rMg9fbFfTwVYF-gYbERvi7Y7wmv/edit";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxbnkgBeylOdXAD0RB4qaCm7JktM5xENssCSozNxFiMjBtMShWsYYud9sNhipQmRiVhMA/exec";
 
         // Toast riêng cho tính năng này: giữ nguyên khi đang lưu, tự ẩn khi có kết quả
         let gsToastTimer = null;
